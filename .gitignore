@@ -1,0 +1,8 @@
+# O export original tem chaves, ids e dados de cliente: nunca publicar
+workflow_original.json
+*original*.json
+relatorio_limpeza.md
+.DS_Store
+
+# Lista de nomes reais usada na limpeza
+trocas.txt
