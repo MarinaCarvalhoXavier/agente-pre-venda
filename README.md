@@ -75,7 +75,7 @@ O custo da proposta caiu de US$ 6,70 para US$ 0,39 sem trocar de modelo: o PDF p
 
 ## Limites
 
-- Testado em 2 leads reais, anonimizados. É um piloto, não uma amostra.
+- Testado em leads reais do CITi, anonimizados. É um piloto, não uma amostra.
 - Na 2ª rodada, às vezes pede de novo um documento já prometido ou junta duas perguntas num item. O gerente revisa antes de enviar.
 
 ## Feito por
