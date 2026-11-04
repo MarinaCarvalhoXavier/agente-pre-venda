@@ -1,6 +1,6 @@
 # Agente de triagem e precificação
 
-Um agente que leva um lead de Discovery Enterprise da transcrição da reunião até a proposta pronta (Word e PDF), dentro do Notion da CITi. A IA lê e pergunta, uma regra fixa decide o preço, e duas pessoas aprovam no meio: o gerente de contas envia as perguntas ao cliente e o líder de Produto aprova o preço.
+Um agente que leva um lead de Discovery Enterprise da transcrição da reunião até a proposta pronta (Word e PDF), dentro do Notion do CITi. A IA lê e pergunta, uma regra fixa decide o preço, e duas pessoas aprovam no meio: o gerente de contas envia as perguntas ao cliente e um especialista da subárea de Produto aprova o preço.
 
 Este repositório tem o workflow do n8n exportado e limpo (sem chaves, sem ids internos e sem dados de cliente) e a documentação de como ele funciona.
 
@@ -16,14 +16,14 @@ Cada lead é uma página no database "Discovery Enterprise" do Notion. Uma pesso
 | --- | --- | --- | --- |
 | Gerente de contas | Novo (com a transcrição) | Triagem: riscos, perguntas ao cliente, mensagem de WhatsApp pronta | Perguntas prontas |
 | Gerente de contas | Mais perguntas (com as respostas coladas) | 2ª rodada: só o que ficou em aberto, no máximo 4 perguntas | Perguntas prontas |
-| Gerente de contas | Pronto para precificar | Revisor de coerência + cálculo pela regra, menção ao líder | Aguardando aprovação |
-| Líder de Produto | Aprovado ou Ajustar (com preço final e motivo) | Registra a decisão e avisa o gerente | Gerando proposta |
+| Gerente de contas | Pronto para precificar | Revisor de coerência + cálculo pela regra, menção ao especialista de Produto | Aguardando aprovação |
+| Especialista de Produto | Aprovado ou Ajustar (com preço final e motivo) | Registra a decisão e avisa o gerente | Gerando proposta |
 | (automático) | — | Proposta com a skill de proposta (Word e PDF) e lista do que conferir | Proposta |
 | (qualquer falha) | — | Escreve o erro na página | Erro no agente |
 
 Regras de operação:
 
-- Nada vai ao cliente sem uma pessoa: o gerente revisa e envia a mensagem, o líder aprova o preço.
+- Nada vai ao cliente sem uma pessoa: o gerente revisa e envia a mensagem, o especialista de Produto aprova o preço.
 - Cada seção nova recolhe as anteriores em toggles; a página mostra só o passo atual aberto.
 - Toda seção termina com o custo da rodada e o total do lead até ali.
 
@@ -52,7 +52,7 @@ Peças importantes:
 1. **Semanas:** 3 ou mais frentes → 6. Uma frente, até 3 usuários-chave confirmados pelo cliente e fluxo atual descrito por ele por escrito → exceção de 4. Qualquer outro caso → 5. Decisão colegiada durante o Discovery → +1 (máximo 6).
 2. **Time:** 1 gerente, 1 especialista e 2 analistas.
 3. **Preço:** unidades × semanas × 5 dias × valor da diária, arredondado para a centena.
-4. **Fora do padrão** (o preço continua o de tabela e o líder decide o ajuste): criticidade alta, escopo amplo demais, trabalho de campo distante ou sensibilidade a preço.
+4. **Fora do padrão** (o preço continua o de tabela e o especialista de Produto decide o ajuste): criticidade alta, escopo amplo demais, trabalho de campo distante ou sensibilidade a preço.
 
 ## Custo de IA por lead
 
@@ -80,4 +80,4 @@ O custo da proposta caiu de US$ 6,70 para US$ 0,39 sem trocar de modelo: o PDF p
 
 ## Feito por
 
-Marina Xavier, Líder de Produto na CITi. Portfólio: https://marinaxavier.vercel.app
+Marina Xavier, Líder de Produto no CITi. Portfólio: https://marinaxavier.vercel.app
