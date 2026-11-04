@@ -75,7 +75,7 @@ O custo da proposta caiu de US$ 6,70 para US$ 0,39 sem trocar de modelo: o PDF p
 
 ## Limites
 
-- Testado em leads reais do CITi, anonimizados. É um piloto, não uma amostra.
+- Rodou num piloto em leads reais do CITi (anonimizados), até o fim do período de teste do n8n Cloud em nov/2026. É um piloto, não uma amostra. Para rodar de novo, importe o `workflow.json` (veja acima).
 - Na 2ª rodada, às vezes pede de novo um documento já prometido ou junta duas perguntas num item. O gerente revisa antes de enviar.
 
 ## Feito por
