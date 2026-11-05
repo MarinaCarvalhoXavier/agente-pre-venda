@@ -73,6 +73,13 @@ O custo da proposta caiu de US$ 6,70 para US$ 0,39 sem trocar de modelo: o PDF p
 3. Troque `<ID_NOTION>` pelo id do seu database e `skill_<SEU_ID>` pelo id da sua skill de proposta.
 4. O database precisa das propriedades: Status, Semáforo, Criticidade, Gerente de contas, Transcrição, Respostas do cliente, Preço de tabela, Semanas, Fora do padrão, Preço final, Motivo do ajuste, Proposta, Custo do agente (US$).
 
+## Correções depois do piloto (nov/2026)
+
+Testei a precificação de 4 leads, rodando cada um 3 ou 4 vezes sem mudar nada. As 13 rodadas repetiram o resultado, mas consistência não é acerto: num lead, o cliente tinha descrito o fluxo atual por escrito e o agente cobrava 5 semanas em vez de 4.
+
+- **Critério fora do formato:** a IA reconhecia o fluxo confirmado, mas escrevia isso só na justificativa, porque o modelo de JSON do prompt não tinha o campo `fluxo_confirmado`. Sem o campo, o código entendia "não confirmado". O campo entrou no modelo, e o "Calcular preço" passou a avisar na página quando um critério vem faltando. Depois da correção, o lead deu 4 semanas nas duas rodadas, e os outros três ficaram iguais.
+- **Limite de 2.000 caracteres do Notion:** ao recolher seções antigas, um parágrafo longo passava do limite e a gravação inteira era recusada, deixando a página em "Analisando". O texto agora é dividido em pedaços de até 1.900 caracteres antes de regravar.
+
 ## Limites
 
 - Rodou num piloto em leads reais do CITi (anonimizados), até o fim do período de teste do n8n Cloud em nov/2026. É um piloto, não uma amostra. Para rodar de novo, importe o `workflow.json` (veja acima).

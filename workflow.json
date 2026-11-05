@@ -3,96 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "claude-sonnet-4-6",
-          "mode": "list",
-          "cachedResultName": "claude-sonnet-4-6"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=Você é assistente da subárea de Produto do CITi, empresa júnior de tecnologia. Escreva uma mensagem de WhatsApp, em português, que o gerente de contas {{ $('Calcular preço').item.json.gerente }} vai enviar para o lead {{ $('Calcular preço').item.json.lead }}.\n\nObjetivo: conseguir as informações que faltam para fecharmos a proposta do Discovery.\n{{ $('Preparar triagem').item.json.rodada === 2 ? '\\nESTA É A SEGUNDA MENSAGEM: o cliente já respondeu a primeira rodada de perguntas. NÃO use a abertura padrão descrita abaixo. Comece com \"Oi! Agradeço pelas respostas, ajudaram bastante.\" e diga em uma frase que ficaram só alguns pontos para fecharmos a proposta. No máximo 4 perguntas. Se uma pergunta for para outra pessoa da empresa, peça para encaminhar. Não repita perguntas da primeira rodada.\\n' : '' }}\nRegras:\n- Comece assim: \"Oi! Aqui é {{ $('Calcular preço').item.json.gerente }}, do CITi. Tudo bem por aí?\". Não escreva \"vocês da\" seguido do nome da empresa; se citar o nome da empresa no texto, use o artigo certo (do/da) ou cite sem artigo.\n- Em seguida, explique em uma frase por que precisamos dessas informações.\n- Tom cordial, profissional e direto. Nada de jargão interno: não use as palavras triagem, semáforo, BANT, sprint, kickoff, pendências.\n- Liste as perguntas numeradas, simples e fáceis de responder. No máximo 7, com UMA pergunta por item: nunca junte duas perguntas diferentes no mesmo item para caber no limite. Se houver mais de 7, fique com as primeiras da lista (já estão em ordem de prioridade) e corte o resto. Junte só itens que perguntam a mesma coisa.\n- Não inclua perguntas que possam soar como desconfiança ou cobrança no WhatsApp: contratos, cláusulas, exclusividade, questões jurídicas, dúvidas sobre quem decide ou sobre orçamento aprovado. Essas ficam para a reunião; simplesmente omita.\n- Se alguma pendência tiver prazo mais curto que as outras, coloque essa pergunta primeiro e marque como *prioridade*.\n- Se um item pede documento, diga que pode mandar no formato que tiver (PDF, planilha, foto).\n- Perguntas sobre dinheiro devem ser suaves: pergunte por \"faixa de investimento em mente\", nunca \"orçamento previsto\".\n- Termine pedindo retorno em até 3 dias úteis e agradecendo.\n- Formate para WhatsApp: negrito com um asterisco só (*assim*), sem markdown, sem emojis.\n- Não invente nenhuma informação que não esteja nas pendências.\n- Nunca faça perguntas para quem está usando este fluxo. Se faltar o nome do gerente, comece só com \"Oi! Tudo bem?\". Se as pendências estiverem vazias, responda apenas: ERRO: pendências vazias.\n- Responda só com o texto da mensagem, sem comentários antes ou depois.\n- No agradecimento, use \"Agradeço\" em vez de \"obrigado\" ou \"obrigada\".\n\nPendências:\n{{ $('Calcular preço').item.json.pendencias }}"
-            }
-          ]
-        },
-        "simplify": false,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.anthropic",
-      "typeVersion": 1,
-      "position": [
-        1120,
-        64
-      ],
-      "id": "59e67a6b-49ba-4a9c-bead-c43f950b8ba1",
-      "name": "Message a model",
-      "credentials": {
-        "anthropicApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (anthropicApi)"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "claude-sonnet-4-6",
-          "mode": "list",
-          "cachedResultName": "claude-sonnet-4-6"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=Você é o agente de triagem e precificação de Discovery Enterprise da subárea de Produto do CITi, empresa júnior de tecnologia do CIn/UFPE. Você recebe o diagnóstico comercial de um lead e decide: dá para precificar? O que falta perguntar? O Discovery vai rodar bem?\n\nOrdem obrigatória: primeiro a conferência das respostas do cliente (se houver), depois gargalos, depois critérios de dimensionamento, depois prontidão. Você NÃO escolhe semanas, time nem preço: um código aplica a regra da CITi a partir dos critérios que você responder.\n\nREGRAS\n\n0. Conferência das respostas. Se o Diagnóstico trouxer respostas do cliente, preencha primeiro \"conferencia_respostas\": para cada resposta, diga em uma frase o que ela confirma ou corrige em relação à transcrição. Depois disso, tudo o que você escrever (gargalos, alertas, premissas, perguntas, critérios) precisa ser coerente com a conferência: um ponto que uma resposta já resolveu NÃO pode aparecer como dúvida, alerta ou pergunta. Exemplo: se o cliente disse qual sistema usa, não existe mais dúvida sobre o nome do sistema nem sobre \"outro sistema\". Se não houver respostas do cliente, devolva lista vazia.\n\n1. Leia o diagnóstico inteiro. Nos gargalos, cite o trecho de origem (com minutagem, se houver), em no máximo 25 palavras.\n\n2. Separe o que o cliente PEDIU do que ele PRECISA e identifique o problema-raiz (o que precisa ser resolvido antes do que foi pedido).\n\n3. Gargalos. Passe por este checklist e classifique cada item ausente ou ambíguo como \"bloqueia_preco\" (sem isso o dimensionamento muda de faixa), \"escopo_fino\" (dá para precificar com premissa explícita) ou \"risco_execucao\" (não muda o preço, mas precisa estar no radar). No máximo 10 gargalos:\n   - número de frentes/processos no escopo e se o cliente quer tudo agora ou em fases\n   - pedido x necessidade (pediu solução pronta, como \"quero uma IA\", sem o problema estar claro?)\n   - decisor e forma de aprovação (individual ou colegiada)\n   - acesso a dados e sistemas (base histórica, ERP, BI, API) e se está garantido\n   - terceiros envolvidos (fornecedor, plataforma com custo por uso)\n   - baseline de métricas de hoje\n   - consistência dos números (medido pelo cliente, estimado na reunião ou projeção comercial?)\n   - valor em jogo (quanto o problema custa ou a solução gera por mês)\n   - orçamento e prazo (budget sinalizado, deadline, sensibilidade a custo)\n   - promessas já feitas pelo CITi na reunião\n   - stakeholders a entrevistar e disponibilidade\n   - maturidade técnica interna do cliente\n   Uma frente paralela que é OUTRO serviço (ex.: Synergy, squad mensal) não entra neste Discovery: registre em premissas, não como bloqueia_preco.\n\n4. Veredito: \"verde\" se não houver nenhum bloqueia_preco; \"amarelo\" se o bloqueia_preco puder ser contornado com premissa conservadora declarada, ou se só houver escopo_fino; \"vermelho\" se houver bloqueia_preco que muda a faixa de preço.\n\n5. Critérios de dimensionamento. Responda no campo \"criterios\", com base só no diagnóstico:\n   - frentes: número de frentes/processos distintos que ESTE Discovery cobre agora (fases futuras e outros serviços não contam).\n   - usuarios_chave: quantas pessoas do cliente operam o processo ou serão entrevistadas. Se não for dito, estime e registre a estimativa em premissas.\n   - usuarios_chave_confirmado: true só se o cliente disse explicitamente quantas pessoas operam o processo ou serão entrevistadas (na reunião ou nas respostas). Se você contou nomes citados ou estimou, false.\n   - fluxo_descrito: true se o cliente já descreveu o processo atual e o que quer decidir com clareza suficiente para começar o mapeamento sem nova reunião de escopo.\n   - colegiado_no_processo: true só se várias pessoas com poder de decisão vão participar das validações DURANTE o Discovery. Sócios que só aprovam a proposta NÃO contam.\n   - dados_centrais: true se dados, métricas, integração entre sistemas ou viabilidade técnica são centrais na dor.\n   - escopo_amplo_demais: true se nem 6 semanas cobrem tudo; nesse caso recorte a frente âncora e liste as demais em premissas como módulos opcionais.\n   - trabalho_campo_distante: true se o Discovery exige visitas presenciais fora da Região Metropolitana do Recife ou em vários locais distantes (ex.: escolas no interior, filiais em outras cidades).\n   - sensibilidade_preco: true se o cliente disse que achou caro, que vai comparar com outros fornecedores ou que tem um teto de preço, OU se alguém do CITi prometeu desconto, ticket menor ou Discovery encurtado. Caso contrário, false.\n   Em \"justificativa_dimensionamento\", explique cada resposta em uma linha, citando o trecho.\n\n6. Teto de valor: só preencha se o diagnóstico der base para estimar o valor mensal gerado para o cliente; mostre a premissa. Sem base, use null e diga em \"premissa\" qual pergunta destrava. Não invente.\n\n7. Criticidade (risco de EXECUÇÃO, não de precificar): \"baixa\" se escopo, dados, acessos e decisor estão claros e não há promessa fora do padrão; \"media\" com 1 ou 2 fatores de risco com caminho alternativo; \"alta\" se o sucesso depende de algo crítico fora do controle do CITi e não confirmado, ou com 3 ou mais fatores. Fatores: dado ou acesso essencial não confirmado; dependência de terceiro; baseline ausente ou números contraditórios; decisor indefinido ou colegiado; promessa difícil de cumprir; equipe do cliente com pouca disponibilidade; alta sensibilidade a preço.\n\n8. Perguntas. Separe \"perguntas_gerente\" (o que foi dito ou prometido na reunião, quem decide, expectativa de preço e formato; no máximo 5) de \"perguntas_cliente\" (dados, acessos, custos, volumes reais, ferramentas e APIs, disponibilidade da equipe; no máximo 8). Cada pergunta ao cliente pede UMA coisa. Para cada uma, indique o prazo típico: acessos e dados históricos até o 3º dia útil; informações técnicas na Sprint 1; agenda da equipe no kickoff; conversa com o responsável técnico na sprint de arquitetura. Marque \"prioridade\": true só no que muda preço, prazo ou formato (precisa vir antes da proposta).\n\n9. Nunca invente informação que não esteja no diagnóstico. Números contraditórios ou promessas que não se sustentam vão em \"alertas\". No máximo 5 premissas e 5 alertas.\n\nFORMATO\nResponda APENAS com um JSON válido, sem nenhum texto antes ou depois e sem crases, exatamente nesta estrutura:\n{\n  \"conferencia_respostas\": [{\"resposta\": \"número ou tema da resposta\", \"confirma\": \"o que fica decidido a partir dela\"}],\n  \"resumo\": \"pedido x necessidade e problema-raiz em 2 a 3 frases\",\n  \"veredito\": \"verde | amarelo | vermelho\",\n  \"motivo_veredito\": \"uma frase\",\n  \"criticidade\": \"baixa | media | alta\",\n  \"motivo_criticidade\": \"uma frase\",\n  \"gargalos\": [{\"item\": \"\", \"status\": \"bloqueia_preco | escopo_fino | risco_execucao\", \"desbloqueia\": \"\", \"trecho\": \"\"}],\n  \"criterios\": {\"frentes\": 1, \"usuarios_chave\": 2, \"usuarios_chave_confirmado\": false, \"fluxo_descrito\": true, \"colegiado_no_processo\": false, \"dados_centrais\": false, \"escopo_amplo_demais\": false, \"trabalho_campo_distante\": false, \"sensibilidade_preco\": false},\n  \"justificativa_dimensionamento\": \"\",\n  \"teto\": {\"valor_mensal_estimado\": null, \"premissa\": \"\"},\n  \"perguntas_gerente\": [\"\"],\n  \"perguntas_cliente\": [{\"pergunta\": \"\", \"para_que\": \"\", \"prazo\": \"\", \"prioridade\": true}],\n  \"premissas\": [\"\"],\n  \"alertas\": [\"\"]\n}\n\nLead: {{ $json.Lead }}\nGerente de contas: {{ $json[\"Gerente de contas\"] }}\n\nDiagnóstico:\n{{ $json.Diagnóstico }}"
-            }
-          ]
-        },
-        "addAttachments": "={{ Object.keys($binary || {}).length > 0 }}",
-        "attachmentsInputType": "binary",
-        "binaryPropertyName": "={{ Object.keys($binary || {}).join(',') }}",
-        "simplify": false,
-        "options": {
-          "system": "Se houver PDFs anexados, eles contêm a transcrição ou o diagnóstico comercial do lead. Leia todos por inteiro, junto com o texto do campo Diagnóstico (que pode estar vazio), e trate tudo como uma única fonte. Se o campo Diagnóstico trouxer respostas do lead a perguntas anteriores, elas valem mais que a transcrição: atualize gargalos, critérios e perguntas com base nelas e não repita perguntas já respondidas.\n\nQuando uma resposta do cliente confirmar ou corrigir algo da transcrição (nome de sistema, existência de material, número, disponibilidade), use a versão do cliente como verdade em todo o JSON e remova o alerta, gargalo ou pergunta correspondente. Nunca peça para confirmar de novo algo que o cliente já confirmou.\n\nNo campo \"criterios\", inclua também \"fluxo_confirmado\": true SOMENTE se o próprio cliente descreveu POR ESCRITO o processo atual passo a passo (quem faz cada etapa, em que ordem e com qual ferramenta), nas respostas às perguntas ou num documento enviado por ele. Uma descrição feita apenas na conversa da reunião, ou um resumo escrito pelo CITi, NÃO conta: nesses casos, false. Explique a resposta em \"justificativa_dimensionamento\".\n\nTranscrições automáticas erram nomes próprios (sistemas, empresas, pessoas). Ao formular perguntas ao cliente, não afirme nomes de sistemas, fornecedores ou ferramentas que você só viu na transcrição: pergunte de forma neutra (ex.: 'Qual sistema vocês usam hoje para registrar X?'). Se um nome parecer duvidoso e o cliente ainda não tiver confirmado, registre em alertas como 'nome possivelmente transcrito errado'.\n\nNão afirme que um material existe (protótipo, planilha, documento) se o cliente só descreveu ou mostrou uma ideia. Pergunte se existe algum material sobre aquilo.",
-          "maxTokens": 8000,
-          "temperature": 0
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.anthropic",
-      "typeVersion": 1,
-      "position": [
-        448,
-        160
-      ],
-      "id": "dfce4e0d-149c-4064-8989-27824c4d39b1",
-      "name": "Triagem",
-      "credentials": {
-        "anthropicApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (anthropicApi)"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Dados do lead (vindos do Notion), pela fase que gerou este item\nconst meta = (() => {\n  for (const n of ['Preparar triagem', 'Preparar precificação']) {\n    try { return $(n).item.json; } catch (e) {}\n  }\n  return {};\n})();\nconst texto = $input.item.json.content[0].text;\nlet t;\ntry {\n  t = JSON.parse(texto.slice(texto.indexOf('{'), texto.lastIndexOf('}') + 1));\n} catch (e) {\n  throw new Error('A triagem não voltou em JSON válido. Fim da resposta: ' + texto.slice(-300));\n}\nif (!t.criterios) throw new Error('A triagem não trouxe os critérios de dimensionamento.');\n\n// Parâmetros da skill (seção 0)\nconst VALOR_DIA = 152.98;\nconst VALOR_DIA_HIST = 87.72;\nconst PESOS = { gerente: 1.00, especialista: 0.75, analista_produto: 0.55, analista_dados_dev: 0.55 };\nconst ancora = Math.round(2.85 * 20 * VALOR_DIA_HIST);\nif (Math.abs(ancora - 5000) > 5) throw new Error('Âncora não fecha: ' + ancora);\n\n// Regra de dimensionamento (seção 4): a IA responde critérios, o código decide\nconst c = t.criterios;\nconst frentes = Number(c.frentes) || 1;\nconst usuarios = Number(c.usuarios_chave) || 99;\nconst time = c.dados_centrais === true\n  ? { gerente: 1, especialista: 1, analista_produto: 1, analista_dados_dev: 1 }\n  : { gerente: 1, especialista: 1, analista_produto: 2, analista_dados_dev: 0 };\nconst unidades = Object.keys(PESOS).reduce((s, k) => s + time[k] * PESOS[k], 0);\nconst precoDe = sem => Math.round((unidades * sem * 5 * VALOR_DIA) / 100) * 100;\n\n// A exceção de 4 semanas só vale com FATOS confirmados pelo cliente:\n// número de usuários dito por ele e fluxo atual descrito por ele por escrito.\n// Opinião do agente não reduz preço; vale a regra conservadora e a confirmação vira pergunta.\nlet semanas, regra; const confirmar = [];\nif (frentes >= 3) { semanas = 6; regra = '3+ frentes interconectadas → 6 semanas'; }\nelse if (frentes === 1 && usuarios <= 3) {\n  if (c.usuarios_chave_confirmado !== true) confirmar.push('usuarios');\n  if (c.fluxo_confirmado !== true) confirmar.push('fluxo');\n  if (!confirmar.length) { semanas = 4; regra = '1 frente, até 3 usuários e fluxo atual confirmados pelo cliente → exceção de 4 semanas'; }\n  else { semanas = 5; regra = 'padrão → 5 semanas (a exceção de 4 semanas exige confirmação do cliente: ' + confirmar.map(x => x === 'usuarios' ? 'número de usuários' : 'fluxo atual por escrito').join(' e ') + ')'; }\n}\nelse { semanas = 5; regra = 'padrão → 5 semanas'; }\nif (c.colegiado_no_processo === true && semanas < 6) { semanas += 1; regra += '; decisão colegiada durante o Discovery → +1 semana'; }\nconst dias = semanas * 5;\nconst preco_alvo = precoDe(semanas);\nconst alertas = (t.alertas || []).slice();\nif (c.escopo_amplo_demais === true) alertas.unshift('Escopo amplo demais para 6 semanas: confira o recorte da frente âncora nas premissas.');\n\n// Fora do padrão: o preço continua o de tabela; quem decide ajuste (prêmio ou desconto) é um humano\nconst motivos = [];\nif (t.criticidade === 'alta') motivos.push('criticidade alta');\nif (c.escopo_amplo_demais === true) motivos.push('escopo amplo demais');\nif (c.trabalho_campo_distante === true) motivos.push('trabalho de campo distante');\nif (c.sensibilidade_preco === true) motivos.push('sensibilidade a preço ou desconto prometido');\nconst fora_do_padrao = motivos.length > 0;\nconst aviso_ajuste = fora_do_padrao\n  ? '⚠️ Preço de tabela. Caso fora do padrão (' + motivos.join(', ') + '): decida se cabe adicional de risco ou deslocamento, ou se o desconto prometido se mantém, antes de aprovar.'\n  : 'Caso padrão: preço de tabela sem ajuste.';\n\nconst emoji = { verde: '🟢', amarelo: '🟡', vermelho: '🔴', baixa: '🟢', media: '🟡', alta: '🔴' };\nconst min = s => s ? s.charAt(0).toLowerCase() + s.slice(1) : '';\nconst pc = (t.perguntas_cliente || []).sort((a, b) => (b.prioridade === true) - (a.prioridade === true));\nif (confirmar.includes('fluxo')) pc.unshift({ pergunta: 'Você consegue descrever em poucas linhas, passo a passo, como esse processo funciona hoje (quem faz cada etapa e em qual ferramenta)?', para_que: 'Definir o tamanho do Discovery', prioridade: true });\nif (confirmar.includes('usuarios')) pc.unshift({ pergunta: 'Quantas pessoas da equipe de vocês participam desse processo hoje e poderiam ser entrevistadas?', para_que: 'Definir o tamanho do Discovery', prioridade: true });\nconst pendencias = pc.map((p, i) => `${i + 1}. ${p.pergunta}${p.para_que ? ' (para ' + min(p.para_que) + ')' : ''}`).join('\\n');\nconst listaG = (t.gargalos || []).map(g => `- [${g.status}] ${g.item}: ${g.desbloqueia}${g.trecho ? ' (' + g.trecho + ')' : ''}`);\nif (confirmar.length) {\n  const oque = confirmar.map(x => x === 'usuarios' ? `o número de pessoas a entrevistar (o agente estimou ${usuarios})` : 'o passo a passo do processo atual, por escrito').join(' e ');\n  listaG.unshift(`- [bloqueia_preco] Falta o cliente confirmar ${oque}. Com isso confirmado, o Discovery cai para 4 semanas (R$ ${precoDe(4)}); por enquanto vale o preço conservador.`);\n}\nconst gargalos = listaG.join('\\n');\n\nreturn { json: {\n  fase: meta.fase, page_id: meta.page_id, gerente_id: meta.gerente_id,\n  lead: meta.Lead, gerente: meta['Gerente de contas'],\n  veredito: t.veredito, veredito_emoji: emoji[t.veredito] || '', motivo_veredito: t.motivo_veredito,\n  criticidade: t.criticidade, criticidade_emoji: emoji[t.criticidade] || '', motivo_criticidade: t.motivo_criticidade,\n  resumo: t.resumo, criterios: c, regra_aplicada: regra,\n  fora_do_padrao, aviso_ajuste,\n  semanas, dias, time, unidades: Number(unidades.toFixed(2)), preco_alvo,\n  justificativa_dimensionamento: `Regra aplicada: ${regra}.\\n${t.justificativa_dimensionamento || ''}`,\n  pendencias, gargalos,\n  perguntas_gerente: (t.perguntas_gerente || []).map((q, i) => `${i + 1}. ${q}`).join('\\n'),\n  premissas: (t.premissas || []).join('\\n'),\n  alertas: alertas.join('\\n')\n} };\n"
-      },
-      "name": "Calcular preço",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        896,
-        160
-      ],
-      "id": "42e3ad00-9609-4bbf-bbc8-f3764e9761f8",
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
         "rule": {
           "interval": [
             {
@@ -107,8 +17,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -448,
-        160
+        -768,
+        192
       ]
     },
     {
@@ -133,8 +43,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 3,
       "position": [
-        -224,
-        0
+        -496,
+        32
       ],
       "credentials": {
         "notionApi": {
@@ -145,35 +55,44 @@
     },
     {
       "parameters": {
-        "resource": "databasePage",
-        "operation": "getAll",
-        "dataSourceId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "<ID_NOTION>"
-        },
-        "returnAll": true,
-        "filterType": "json",
-        "filterJson": "{\"property\":\"Status\",\"select\":{\"equals\":\"Pronto para precificar\"}}",
-        "simple": false,
-        "options": {
-          "downloadFiles": true
-        }
+        "jsCode": "// Um item por PDF (para extrair o texto) + um item com os dados da página, textos e imagens\nconst out = [];\nconst items = $input.all();\nfor (let i = 0; i < items.length; i++) {\n  const it = items[i];\n  const textos = []; const imagens = {}; const ignorados = [];\n  for (const [k, b] of Object.entries(it.binary || {})) {\n    if (!k.startsWith('Transcrição')) continue; // ignora outros campos de arquivo (ex.: a Proposta gerada)\n    const mt = b.mimeType || ''; const nome = b.fileName || k;\n    if (mt === 'application/pdf') out.push({ json: { page_id: it.json.id, tipo: 'pdf', nome }, binary: { data: b }, pairedItem: { item: i } });\n    else if (mt.startsWith('image/')) imagens[k] = b;\n    else if (mt.startsWith('text/') || /\\.(txt|md|vtt|srt|csv)$/i.test(nome)) {\n      const buf = await this.helpers.getBinaryDataBuffer(i, k);\n      textos.push('--- Arquivo ' + nome + ' ---\\n' + buf.toString('utf8'));\n    } else ignorados.push(nome + ' (' + (mt || 'tipo desconhecido') + ')');\n  }\n  out.push({ json: { page_id: it.json.id, tipo: 'meta', props: it.json.properties || {}, textos, imagens, ignorados }, pairedItem: { item: i } });\n}\nreturn out;\n"
       },
-      "id": "f7ae4c69-48dc-4564-95bf-27b4af47fe16",
-      "name": "Buscar para precificar",
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 3,
+      "id": "032fb536-01bb-46c9-8238-c3f0306b5baf",
+      "name": "Separar arquivos (novo)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        -224,
-        320
+        -288,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "f1b84ab4-ea86-44b6-a7d1-63451ba7775b",
+      "name": "Extrair PDF (novo)",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        16
       ],
-      "credentials": {
-        "notionApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (notionApi)"
-        }
-      }
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Junta tudo por página. PDF com texto normal vai como texto (barato);\n// PDF com pouco texto por página (escaneado, prints) continua indo como PDF completo.\nconst FASE = 'triagem';\nconst sep = $('Separar arquivos (novo)').all();\nconst ext = $input.all();\nconst paginas = new Map();\nfor (let i = 0; i < sep.length; i++) {\n  const s = sep[i]; const pid = s.json.page_id;\n  if (!paginas.has(pid)) paginas.set(pid, { idx: i, meta: null, pdfTextos: [], anexos: {} });\n  const pg = paginas.get(pid);\n  if (s.json.tipo === 'meta') { pg.meta = s.json; continue; }\n  const e = ext[i]?.json || {};\n  const texto = String(e.text || '').replace(/\\n{3,}/g, '\\n\\n').trim();\n  const nPag = Number(e.numpages) || 1;\n  if (texto && texto.length / nPag >= 300) pg.pdfTextos.push('--- Transcrição em PDF: ' + s.json.nome + ' (' + nPag + ' páginas) ---\\n' + texto);\n  else pg.anexos['pdf_' + Object.keys(pg.anexos).length] = s.binary.data;\n}\nconst out = [];\nfor (const [pid, pg] of paginas) {\n  const m = pg.meta || { props: {}, textos: [], imagens: {}, ignorados: [] };\n  const p = m.props;\n  const lead = (p['Lead']?.title || []).map(t => t.plain_text).join('') || 'Lead';\n  const people = p['Gerente de contas']?.people || [];\n  const resp = (p['Respostas do cliente']?.rich_text || []).map(t => t.plain_text).join('');\n  let diag = [...pg.pdfTextos, ...m.textos].join('\\n\\n');\n  if (diag.length > 400000) diag = diag.slice(0, 400000) + '\\n[...cortado por tamanho]';\n  if (m.ignorados.length) diag += '\\n\\n[Aviso: não foi possível ler estes arquivos; registre em alertas: ' + m.ignorados.join(', ') + ']';\n  if (FASE === 'triagem') { if (resp) diag += '\\n\\nRespostas do cliente às perguntas enviadas:\\n' + resp; }\n  else diag += resp ? '\\n\\nRespostas do cliente às perguntas enviadas (valem mais que a transcrição):\\n' + resp : '\\n\\nO cliente ainda não respondeu as perguntas; precifique com premissas conservadoras declaradas.';\n  out.push({ json: { fase: FASE, page_id: pid, Lead: lead, 'Gerente de contas': people[0]?.name || '', gerente_id: people[0]?.id || '', custo_anterior: p['Custo do agente (US$)']?.number || 0, 'Diagnóstico': diag.trim(), arquivos_como_texto: pg.pdfTextos.length, arquivos_como_pdf: Object.keys(pg.anexos).length }, binary: { ...pg.anexos, ...m.imagens }, pairedItem: { item: pg.idx } });\n}\nreturn out;\n"
+      },
+      "id": "c280e858-80c5-4f86-8081-e195fa31e6bb",
+      "name": "Ler arquivos (novo)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        16
+      ]
     },
     {
       "parameters": {
@@ -199,42 +118,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 3,
       "position": [
-        0,
-        0
-      ],
-      "credentials": {
-        "notionApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (notionApi)"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "databasePage",
-        "operation": "update",
-        "pageId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $json.page_id }}"
-        },
-        "propertiesUi": {
-          "propertyValues": [
-            {
-              "key": "Status|select",
-              "selectValue": "Analisando"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "065134df-651e-4453-bdae-f021edec1d0c",
-      "name": "Marcar analisando (preço)",
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 3,
-      "position": [
-        0,
-        320
+        288,
+        16
       ],
       "credentials": {
         "notionApi": {
@@ -253,279 +138,50 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        224,
-        0
+        464,
+        16
       ]
     },
     {
       "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const s = $('Ler arquivos (preço)').item;\nreturn { json: s.json, binary: s.binary || {} };"
-      },
-      "id": "034e17fa-3677-41aa-8fc7-b923a3f25be3",
-      "name": "Preparar precificação",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        224,
-        320
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "<ID_NOTION>",
-              "leftValue": "={{ $json.fase }}",
-              "operator": {
-                "operation": "equals",
-                "type": "string"
-              },
-              "rightValue": "triagem"
-            }
-          ],
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          }
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-6"
         },
-        "options": {}
-      },
-      "id": "f4a23308-476c-445b-aabf-545e03e896ca",
-      "name": "Fase triagem?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        896,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const d = $('Calcular preço').item.json;\nconst LIDER = '<ID_NOTION>';\nconst hoje = $now.setZone('America/Recife').toFormat('dd/MM HH:mm');\nconst rt = s => { s = String(s || ''); const out = []; for (let i = 0; i < s.length; i += 1900) out.push({ type: 'text', text: { content: s.slice(i, i + 1900) } }); return out.length ? out : [{ type: 'text', text: { content: ' ' } }]; };\nconst para = s => ({ object: 'block', type: 'paragraph', paragraph: { rich_text: rt(s) } });\nconst h2 = s => ({ object: 'block', type: 'heading_2', heading_2: { rich_text: rt(s) } });\nconst h3 = s => ({ object: 'block', type: 'heading_3', heading_3: { rich_text: rt(s) } });\nconst bullet = s => ({ object: 'block', type: 'bulleted_list_item', bulleted_list_item: { rich_text: rt(s) } });\nconst quote = s => ({ object: 'block', type: 'quote', quote: { rich_text: rt(s) } });\nconst cinza = s => ({ object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: s }, annotations: { italic: true, color: 'gray' } }] } });\nconst lines = s => String(s || '').split('\\n').map(x => x.trim()).filter(Boolean);\nconst mention = (id, txt) => ({ object: 'block', type: 'paragraph', paragraph: { rich_text: [ ...(id ? [{ type: 'mention', mention: { type: 'user', user: { id } } }] : []), { type: 'text', text: { content: txt } } ] } });\nconst reais = n => 'R$ ' + String(n).replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');\nconst semaforo = { verde: 'Verde', amarelo: 'Amarelo', vermelho: 'Vermelho' }[d.veredito];\nconst crit = { baixa: 'Baixa', media: 'Média', alta: 'Alta' }[d.criticidade];\n\n// Custo desta rodada (preços do Sonnet 4.6 em US$ por milhão de tokens)\nconst custoDe = u => u ? ((u.input_tokens || 0) * 3 + (u.cache_creation_input_tokens || 0) * 3.75 + (u.cache_read_input_tokens || 0) * 0.3 + (u.output_tokens || 0) * 15) / 1e6 : 0;\nconst tokensDe = u => u ? (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.output_tokens || 0) : 0;\nconst usos = [];\ntry { usos.push($('Triagem').item.json.usage); } catch (e) {}\ntry { usos.push($('Revisar coerência').item.json.usage); } catch (e) {}\nif (d.fase === 'triagem') usos.push($input.item.json.usage);\nconst custo = usos.reduce((s, u) => s + custoDe(u), 0);\nconst tokens = usos.reduce((s, u) => s + tokensDe(u), 0);\nconst meta = (() => { for (const n of ['Preparar triagem', 'Preparar precificação']) { try { return $(n).item.json; } catch (e) {} } return {}; })();\nconst total = (Number(meta.custo_anterior) || 0) + custo;\nconst linhaCusto = cinza(`Custo desta rodada: US$ ${custo.toFixed(3)} (${Math.round(tokens / 1000)} mil tokens, ${usos.filter(Boolean).length} chamada(s)). Total do lead até aqui: US$ ${total.toFixed(2)}.`);\n\nlet children = [];\nconst properties = {};\nif (semaforo) properties['Semáforo'] = { select: { name: semaforo } };\nif (crit) properties['Criticidade'] = { select: { name: crit } };\nproperties['Custo do agente (US$)'] = { number: Math.round(total * 1000) / 1000 };\n\nif (d.fase === 'triagem') {\n  const msg = $input.item.json.content?.[0]?.text || '';\n  const nPerg = (msg.match(/^\\s*\\*?\\d+[.)]/gm) || []).length;\n  children = [\n    meta.rodada === 2\n      ? h2(`🔎 2ª rodada de perguntas · ${hoje} · ${d.veredito_emoji} ${semaforo || d.veredito} · ${nPerg} perguntas para o cliente`)\n      : h2(`🔎 Triagem · ${hoje} · ${d.veredito_emoji} ${semaforo || d.veredito} · ${nPerg} perguntas para o cliente`),\n    meta.rodada === 2\n      ? mention(d.gerente_id, ' a 2ª rodada está pronta: só o que as respostas deixaram em aberto. Envie ao cliente, cole as novas respostas abaixo das anteriores no campo \"Respostas do cliente\" e mude o Status para \"Pronto para precificar\".')\n      : mention(d.gerente_id, ' a triagem está pronta. Revise a mensagem abaixo, envie ao cliente pelo WhatsApp e cole as respostas no campo \"Respostas do cliente\". Depois mude o Status para \"Pronto para precificar\" ou, se as respostas abrirem novas dúvidas, para \"Mais perguntas\".'),\n    para(`Semáforo: ${d.veredito_emoji} ${d.veredito} — ${d.motivo_veredito}`),\n    para(`Criticidade: ${d.criticidade_emoji} ${d.criticidade} — ${d.motivo_criticidade}`),\n    h3('Riscos encontrados'),\n    ...lines(d.gargalos).slice(0, 12).map(l => bullet(l.replace(/^- /, ''))),\n    h3('Mensagem para o cliente (revise antes de enviar)'),\n    quote(msg),\n    h3('Para o gerente de contas confirmar'),\n    ...lines(d.perguntas_gerente).map(l => bullet(l.replace(/^\\d+\\.\\s*/, ''))),\n    h3('Alertas'),\n    ...lines(d.alertas).map(bullet),\n    linhaCusto\n  ];\n  properties['Status'] = { select: { name: 'Perguntas prontas' } };\n} else {\n  const t = d.time || {};\n  const analistas = (t.analista_produto || 0) + (t.analista_dados_dev || 0);\n  const timeTxt = `${t.gerente || 0} gerente, ${t.especialista || 0} especialista, ${analistas} analista(s)${t.analista_dados_dev ? ' (1 de dados/dev)' : ''}`;\n  const bloqueios = lines(d.gargalos).filter(l => l.includes('[bloqueia_preco]'));\n  children = [\n    h2(`💰 Precificação · ${hoje} · ${reais(d.preco_alvo)} · ${d.semanas} semanas${d.fora_do_padrao ? ' · ⚠️ fora do padrão' : ''}`),\n    mention(LIDER, ' a precificação está pronta para sua aprovação. Mude o Status para \"Aprovado\" ou \"Ajustar\" (e comente o ajuste).'),\n    ...(d.fora_do_padrao ? [para(d.aviso_ajuste)] : []),\n    para(`Preço de tabela: ${reais(d.preco_alvo)} · ${d.semanas} semanas · ${timeTxt}`),\n    para(d.justificativa_dimensionamento),\n    para(`Semáforo: ${d.veredito_emoji} ${d.veredito} — ${d.motivo_veredito}`),\n    h3('Ainda bloqueia o preço'),\n    ...(bloqueios.length ? bloqueios.map(l => bullet(l.replace(/^- \\[bloqueia_preco\\] /, ''))) : [para('Nada. As respostas do cliente cobriram o que faltava.')]),\n    h3('Alertas'),\n    ...lines(d.alertas).map(bullet),\n    linhaCusto\n  ];\n  properties['Status'] = { select: { name: 'Aguardando aprovação' } };\n  properties['Preço de tabela'] = { number: d.preco_alvo };\n  properties['Semanas'] = { number: d.semanas };\n  properties['Fora do padrão'] = { checkbox: !!d.fora_do_padrao };\n}\nreturn { json: { page_id: d.page_id, children: children.slice(0, 95), properties } };\n"
-      },
-      "id": "55f65953-397c-438e-9e3d-fca1019e99df",
-      "name": "Montar página",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1344,
-        160
-      ],
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "method": "PATCH",
-        "url": "={{ 'https://api.notion.com/v1/pages/' + $json.page_id }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "notionApi",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
+        "messages": {
+          "values": [
             {
-              "name": "Notion-Version",
-              "value": "2022-06-28"
+              "content": "=Você é o agente de triagem e precificação de Discovery Enterprise da subárea de Produto do CITi, empresa júnior de tecnologia do CIn/UFPE. Você recebe o diagnóstico comercial de um lead e decide: dá para precificar? O que falta perguntar? O Discovery vai rodar bem?\n\nOrdem obrigatória: primeiro a conferência das respostas do cliente (se houver), depois gargalos, depois critérios de dimensionamento, depois prontidão. Você NÃO escolhe semanas, time nem preço: um código aplica a regra da CITi a partir dos critérios que você responder.\n\nREGRAS\n\n0. Conferência das respostas. Se o Diagnóstico trouxer respostas do cliente, preencha primeiro \"conferencia_respostas\": para cada resposta, diga em uma frase o que ela confirma ou corrige em relação à transcrição. Depois disso, tudo o que você escrever (gargalos, alertas, premissas, perguntas, critérios) precisa ser coerente com a conferência: um ponto que uma resposta já resolveu NÃO pode aparecer como dúvida, alerta ou pergunta. Exemplo: se o cliente disse qual sistema usa, não existe mais dúvida sobre o nome do sistema nem sobre \"outro sistema\". Se não houver respostas do cliente, devolva lista vazia.\n\n1. Leia o diagnóstico inteiro. Nos gargalos, cite o trecho de origem (com minutagem, se houver), em no máximo 25 palavras.\n\n2. Separe o que o cliente PEDIU do que ele PRECISA e identifique o problema-raiz (o que precisa ser resolvido antes do que foi pedido).\n\n3. Gargalos. Passe por este checklist e classifique cada item ausente ou ambíguo como \"bloqueia_preco\" (sem isso o dimensionamento muda de faixa), \"escopo_fino\" (dá para precificar com premissa explícita) ou \"risco_execucao\" (não muda o preço, mas precisa estar no radar). No máximo 10 gargalos:\n   - número de frentes/processos no escopo e se o cliente quer tudo agora ou em fases\n   - pedido x necessidade (pediu solução pronta, como \"quero uma IA\", sem o problema estar claro?)\n   - decisor e forma de aprovação (individual ou colegiada)\n   - acesso a dados e sistemas (base histórica, ERP, BI, API) e se está garantido\n   - terceiros envolvidos (fornecedor, plataforma com custo por uso)\n   - baseline de métricas de hoje\n   - consistência dos números (medido pelo cliente, estimado na reunião ou projeção comercial?)\n   - valor em jogo (quanto o problema custa ou a solução gera por mês)\n   - orçamento e prazo (budget sinalizado, deadline, sensibilidade a custo)\n   - promessas já feitas pelo CITi na reunião\n   - stakeholders a entrevistar e disponibilidade\n   - maturidade técnica interna do cliente\n   Uma frente paralela que é OUTRO serviço (ex.: Synergy, squad mensal) não entra neste Discovery: registre em premissas, não como bloqueia_preco.\n\n4. Veredito: \"verde\" se não houver nenhum bloqueia_preco; \"amarelo\" se o bloqueia_preco puder ser contornado com premissa conservadora declarada, ou se só houver escopo_fino; \"vermelho\" se houver bloqueia_preco que muda a faixa de preço.\n\n5. Critérios de dimensionamento. Responda no campo \"criterios\", com base só no diagnóstico:\n   - frentes: número de frentes/processos distintos que ESTE Discovery cobre agora (fases futuras e outros serviços não contam).\n   - usuarios_chave: quantas pessoas do cliente operam o processo ou serão entrevistadas. Se não for dito, estime e registre a estimativa em premissas.\n   - usuarios_chave_confirmado: true só se o cliente disse explicitamente quantas pessoas operam o processo ou serão entrevistadas (na reunião ou nas respostas). Se você contou nomes citados ou estimou, false.\n   - fluxo_descrito: true se o cliente já descreveu o processo atual e o que quer decidir com clareza suficiente para começar o mapeamento sem nova reunião de escopo.\n   - colegiado_no_processo: true só se várias pessoas com poder de decisão vão participar das validações DURANTE o Discovery. Sócios que só aprovam a proposta NÃO contam.\n   - dados_centrais: true se dados, métricas, integração entre sistemas ou viabilidade técnica são centrais na dor.\n   - escopo_amplo_demais: true se nem 6 semanas cobrem tudo; nesse caso recorte a frente âncora e liste as demais em premissas como módulos opcionais.\n   - trabalho_campo_distante: true se o Discovery exige visitas presenciais fora da Região Metropolitana do Recife ou em vários locais distantes (ex.: escolas no interior, filiais em outras cidades).\n   - sensibilidade_preco: true se o cliente disse que achou caro, que vai comparar com outros fornecedores ou que tem um teto de preço, OU se alguém do CITi prometeu desconto, ticket menor ou Discovery encurtado. Caso contrário, false.\n   Em \"justificativa_dimensionamento\", explique cada resposta em uma linha, citando o trecho.\n\n6. Teto de valor: só preencha se o diagnóstico der base para estimar o valor mensal gerado para o cliente; mostre a premissa. Sem base, use null e diga em \"premissa\" qual pergunta destrava. Não invente.\n\n7. Criticidade (risco de EXECUÇÃO, não de precificar): \"baixa\" se escopo, dados, acessos e decisor estão claros e não há promessa fora do padrão; \"media\" com 1 ou 2 fatores de risco com caminho alternativo; \"alta\" se o sucesso depende de algo crítico fora do controle do CITi e não confirmado, ou com 3 ou mais fatores. Fatores: dado ou acesso essencial não confirmado; dependência de terceiro; baseline ausente ou números contraditórios; decisor indefinido ou colegiado; promessa difícil de cumprir; equipe do cliente com pouca disponibilidade; alta sensibilidade a preço.\n\n8. Perguntas. Separe \"perguntas_gerente\" (o que foi dito ou prometido na reunião, quem decide, expectativa de preço e formato; no máximo 5) de \"perguntas_cliente\" (dados, acessos, custos, volumes reais, ferramentas e APIs, disponibilidade da equipe; no máximo 8). Cada pergunta ao cliente pede UMA coisa. Para cada uma, indique o prazo típico: acessos e dados históricos até o 3º dia útil; informações técnicas na Sprint 1; agenda da equipe no kickoff; conversa com o responsável técnico na sprint de arquitetura. Marque \"prioridade\": true só no que muda preço, prazo ou formato (precisa vir antes da proposta).\n\n9. Nunca invente informação que não esteja no diagnóstico. Números contraditórios ou promessas que não se sustentam vão em \"alertas\". No máximo 5 premissas e 5 alertas.\n\nFORMATO\nResponda APENAS com um JSON válido, sem nenhum texto antes ou depois e sem crases, exatamente nesta estrutura:\n{\n  \"conferencia_respostas\": [{\"resposta\": \"número ou tema da resposta\", \"confirma\": \"o que fica decidido a partir dela\"}],\n  \"resumo\": \"pedido x necessidade e problema-raiz em 2 a 3 frases\",\n  \"veredito\": \"verde | amarelo | vermelho\",\n  \"motivo_veredito\": \"uma frase\",\n  \"criticidade\": \"baixa | media | alta\",\n  \"motivo_criticidade\": \"uma frase\",\n  \"gargalos\": [{\"item\": \"\", \"status\": \"bloqueia_preco | escopo_fino | risco_execucao\", \"desbloqueia\": \"\", \"trecho\": \"\"}],\n  \"criterios\": {\"frentes\": 1, \"usuarios_chave\": 2, \"usuarios_chave_confirmado\": false, \"fluxo_descrito\": true, \"fluxo_confirmado\": false, \"colegiado_no_processo\": false, \"dados_centrais\": false, \"escopo_amplo_demais\": false, \"trabalho_campo_distante\": false, \"sensibilidade_preco\": false},\n  \"justificativa_dimensionamento\": \"\",\n  \"teto\": {\"valor_mensal_estimado\": null, \"premissa\": \"\"},\n  \"perguntas_gerente\": [\"\"],\n  \"perguntas_cliente\": [{\"pergunta\": \"\", \"para_que\": \"\", \"prazo\": \"\", \"prioridade\": true}],\n  \"premissas\": [\"\"],\n  \"alertas\": [\"\"]\n}\n\nLead: {{ $json.Lead }}\nGerente de contas: {{ $json[\"Gerente de contas\"] }}\n\nDiagnóstico:\n{{ $json.Diagnóstico }}"
             }
           ]
         },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ properties: $json.properties }) }}",
-        "options": {}
-      },
-      "id": "5e83f0f6-88fd-4e1d-8d4b-f552f7fb7abc",
-      "name": "Atualizar propriedades",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1568,
-        160
-      ],
-      "credentials": {
-        "notionApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (notionApi)"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "method": "PATCH",
-        "url": "={{ 'https://api.notion.com/v1/blocks/' + $('Recolher histórico').item.json.page_id + '/children' }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "notionApi",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Notion-Version",
-              "value": "2022-06-28"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ children: $('Recolher histórico').item.json.children }) }}",
-        "options": {}
-      },
-      "id": "fc52bf0b-b94e-46cf-b1e6-3c4071016fd4",
-      "name": "Escrever na página",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2240,
-        64
-      ],
-      "credentials": {
-        "notionApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (notionApi)"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Junta tudo por página. PDF com texto normal vai como texto (barato);\n// PDF com pouco texto por página (escaneado, prints) continua indo como PDF completo.\nconst FASE = 'triagem';\nconst sep = $('Separar arquivos (novo)').all();\nconst ext = $input.all();\nconst paginas = new Map();\nfor (let i = 0; i < sep.length; i++) {\n  const s = sep[i]; const pid = s.json.page_id;\n  if (!paginas.has(pid)) paginas.set(pid, { idx: i, meta: null, pdfTextos: [], anexos: {} });\n  const pg = paginas.get(pid);\n  if (s.json.tipo === 'meta') { pg.meta = s.json; continue; }\n  const e = ext[i]?.json || {};\n  const texto = String(e.text || '').replace(/\\n{3,}/g, '\\n\\n').trim();\n  const nPag = Number(e.numpages) || 1;\n  if (texto && texto.length / nPag >= 300) pg.pdfTextos.push('--- Transcrição em PDF: ' + s.json.nome + ' (' + nPag + ' páginas) ---\\n' + texto);\n  else pg.anexos['pdf_' + Object.keys(pg.anexos).length] = s.binary.data;\n}\nconst out = [];\nfor (const [pid, pg] of paginas) {\n  const m = pg.meta || { props: {}, textos: [], imagens: {}, ignorados: [] };\n  const p = m.props;\n  const lead = (p['Lead']?.title || []).map(t => t.plain_text).join('') || 'Lead';\n  const people = p['Gerente de contas']?.people || [];\n  const resp = (p['Respostas do cliente']?.rich_text || []).map(t => t.plain_text).join('');\n  let diag = [...pg.pdfTextos, ...m.textos].join('\\n\\n');\n  if (diag.length > 400000) diag = diag.slice(0, 400000) + '\\n[...cortado por tamanho]';\n  if (m.ignorados.length) diag += '\\n\\n[Aviso: não foi possível ler estes arquivos; registre em alertas: ' + m.ignorados.join(', ') + ']';\n  if (FASE === 'triagem') { if (resp) diag += '\\n\\nRespostas do cliente às perguntas enviadas:\\n' + resp; }\n  else diag += resp ? '\\n\\nRespostas do cliente às perguntas enviadas (valem mais que a transcrição):\\n' + resp : '\\n\\nO cliente ainda não respondeu as perguntas; precifique com premissas conservadoras declaradas.';\n  out.push({ json: { fase: FASE, page_id: pid, Lead: lead, 'Gerente de contas': people[0]?.name || '', gerente_id: people[0]?.id || '', custo_anterior: p['Custo do agente (US$)']?.number || 0, 'Diagnóstico': diag.trim(), arquivos_como_texto: pg.pdfTextos.length, arquivos_como_pdf: Object.keys(pg.anexos).length }, binary: { ...pg.anexos, ...m.imagens }, pairedItem: { item: pg.idx } });\n}\nreturn out;\n"
-      },
-      "id": "c280e858-80c5-4f86-8081-e195fa31e6bb",
-      "name": "Ler arquivos (novo)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -112,
-        -160
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Junta tudo por página. PDF com texto normal vai como texto (barato);\n// PDF com pouco texto por página (escaneado, prints) continua indo como PDF completo.\nconst FASE = 'precificacao';\nconst sep = $('Separar arquivos (preço)').all();\nconst ext = $input.all();\nconst paginas = new Map();\nfor (let i = 0; i < sep.length; i++) {\n  const s = sep[i]; const pid = s.json.page_id;\n  if (!paginas.has(pid)) paginas.set(pid, { idx: i, meta: null, pdfTextos: [], anexos: {} });\n  const pg = paginas.get(pid);\n  if (s.json.tipo === 'meta') { pg.meta = s.json; continue; }\n  const e = ext[i]?.json || {};\n  const texto = String(e.text || '').replace(/\\n{3,}/g, '\\n\\n').trim();\n  const nPag = Number(e.numpages) || 1;\n  if (texto && texto.length / nPag >= 300) pg.pdfTextos.push('--- Transcrição em PDF: ' + s.json.nome + ' (' + nPag + ' páginas) ---\\n' + texto);\n  else pg.anexos['pdf_' + Object.keys(pg.anexos).length] = s.binary.data;\n}\nconst out = [];\nfor (const [pid, pg] of paginas) {\n  const m = pg.meta || { props: {}, textos: [], imagens: {}, ignorados: [] };\n  const p = m.props;\n  const lead = (p['Lead']?.title || []).map(t => t.plain_text).join('') || 'Lead';\n  const people = p['Gerente de contas']?.people || [];\n  const resp = (p['Respostas do cliente']?.rich_text || []).map(t => t.plain_text).join('');\n  let diag = [...pg.pdfTextos, ...m.textos].join('\\n\\n');\n  if (diag.length > 400000) diag = diag.slice(0, 400000) + '\\n[...cortado por tamanho]';\n  if (m.ignorados.length) diag += '\\n\\n[Aviso: não foi possível ler estes arquivos; registre em alertas: ' + m.ignorados.join(', ') + ']';\n  if (FASE === 'triagem') { if (resp) diag += '\\n\\nRespostas do cliente às perguntas enviadas:\\n' + resp; }\n  else diag += resp ? '\\n\\nRespostas do cliente às perguntas enviadas (valem mais que a transcrição):\\n' + resp : '\\n\\nO cliente ainda não respondeu as perguntas; precifique com premissas conservadoras declaradas.';\n  out.push({ json: { fase: FASE, page_id: pid, Lead: lead, 'Gerente de contas': people[0]?.name || '', gerente_id: people[0]?.id || '', custo_anterior: p['Custo do agente (US$)']?.number || 0, 'Diagnóstico': diag.trim(), arquivos_como_texto: pg.pdfTextos.length, arquivos_como_pdf: Object.keys(pg.anexos).length }, binary: { ...pg.anexos, ...m.imagens }, pairedItem: { item: pg.idx } });\n}\nreturn out;\n"
-      },
-      "id": "72614811-3add-475b-be57-736e5d7f2a7f",
-      "name": "Ler arquivos (preço)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -112,
-        480
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const meta = (() => {\n  for (const n of ['Preparar triagem', 'Preparar precificação', 'Preparar proposta']) {\n    try { const j = $(n).item.json; if (j && j.page_id) return j; } catch (e) {}\n  }\n  return {};\n})();\nif (!meta.page_id) throw new Error('Erro sem página associada: ' + JSON.stringify($json).slice(0, 300));\nconst LIDER = '<ID_NOTION>';\nconst e = $json.error;\nconst msg = String((e && (e.description || e.message)) || e || 'erro desconhecido').slice(0, 1500);\nconst semCredito = /credit balance is too low/i.test(msg);\nconst hoje = $now.setZone('America/Recife').toFormat('dd/MM HH:mm');\nconst etapa = { triagem: 'triagem', precificacao: 'precificação', proposta: 'geração da proposta' }[meta.fase] || 'análise';\nconst voltar = { triagem: 'Novo', precificacao: 'Pronto para precificar', proposta: 'Gerando proposta' }[meta.fase] || 'Novo';\nconst rich = [{ type: 'mention', mention: { type: 'user', user: { id: LIDER } } }];\nif (meta.gerente_id && meta.gerente_id !== LIDER) rich.push({ type: 'text', text: { content: ' ' } }, { type: 'mention', mention: { type: 'user', user: { id: meta.gerente_id } } });\nconst dica = semCredito ? 'Acabaram os créditos da API da Anthropic. Recarregue em console.anthropic.com (Billing)' : 'Confira os arquivos (PDF ou .txt funcionam melhor)';\nrich.push({ type: 'text', text: { content: ` o agente não conseguiu terminar a ${etapa} desta página. ${dica} e mude o Status para \"${voltar}\" para tentar de novo.` } });\nreturn { json: {\n  page_id: meta.page_id,\n  properties: { Status: { select: { name: 'Erro no agente' } } },\n  children: [\n    { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: '⚠️ Erro do agente · ' + hoje } }] } },\n    { object: 'block', type: 'paragraph', paragraph: { rich_text: rich } },\n    { object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: 'Detalhe técnico: ' + msg } }] } }\n  ]\n} };\n"
-      },
-      "id": "fd9aa9c0-ff21-4049-93b7-211596cd0732",
-      "name": "Montar erro",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1344,
-        480
-      ]
-    },
-    {
-      "parameters": {
-        "url": "={{ 'https://api.notion.com/v1/blocks/' + $json.id + '/children?page_size=100' }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "notionApi",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Notion-Version",
-              "value": "2022-06-28"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "d42c8359-e892-4b5f-86cc-ccc1daea35ec",
-      "name": "Ler página",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1792,
-        160
-      ],
-      "credentials": {
-        "notionApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (notionApi)"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Seções antigas do agente viram títulos toggle; a nova seção fica aberta\nconst novo = (() => {\n  for (const n of ['Montar página', 'Montar erro', 'Montar decisão', 'Montar entrega']) {\n    try { return $(n).item.json; } catch (e) {}\n  }\n  return null;\n})();\nif (!novo) throw new Error('Não achei a nova seção a escrever.');\nconst pagina = $('Atualizar propriedades').item.json;\nconst BOT = pagina.last_edited_by?.id;\nconst blocks = $json.results || [];\nconst txt = b => (b[b.type]?.rich_text || []).map(r => r.plain_text).join('');\nconst MARCA = /^(🔎|💰|⚠️|✅|✏️|📄)/;\nconst ehMarca = b => b.type === 'heading_2' && !b.heading_2.is_toggleable && b.created_by?.id === BOT && MARCA.test(txt(b));\n\nconst secoes = []; let atual = null;\nfor (const b of blocks) {\n  if (ehMarca(b)) { atual = { head: b, body: [] }; secoes.push(atual); continue; }\n  if (!atual) continue;\n  if (b.type === 'heading_2' || b.created_by?.id !== BOT) { atual = null; continue; }\n  atual.body.push(b);\n}\n\nconst limpa = rich => (rich || []).map(r => {\n  if (r.type === 'mention' && r.mention?.type === 'user') return { type: 'mention', mention: { type: 'user', user: { id: r.mention.user.id } }, annotations: r.annotations };\n  if (r.type === 'text') return { type: 'text', text: { content: r.text.content, link: r.text.link }, annotations: r.annotations };\n  return { type: 'text', text: { content: r.plain_text || '' }, annotations: r.annotations };\n});\nconst TIPOS = ['paragraph', 'bulleted_list_item', 'numbered_list_item', 'quote', 'heading_3', 'callout'];\nconst copia = b => ({ object: 'block', type: b.type, [b.type]: { rich_text: limpa(b[b.type].rich_text) } });\nconst toggles = secoes.map(s => ({\n  object: 'block', type: 'heading_2',\n  heading_2: { rich_text: limpa(s.head.heading_2.rich_text), is_toggleable: true, children: s.body.filter(b => TIPOS.includes(b.type)).slice(0, 100).map(copia) }\n}));\nreturn { json: {\n  page_id: pagina.id,\n  children: [...toggles, ...novo.children].slice(0, 100),\n  delete_ids: secoes.flatMap(s => [s.head.id, ...s.body.map(b => b.id)])\n} };\n"
-      },
-      "id": "acb27323-c302-4f9b-9c87-6db5fbfebe16",
-      "name": "Recolher histórico",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2016,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "return $input.all().flatMap(it => (it.json.delete_ids || []).map(id => ({ json: { id } })));"
-      },
-      "id": "34984353-89b9-418a-8f8d-67448f7b9eb7",
-      "name": "Blocos a apagar",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2240,
-        352
-      ]
-    },
-    {
-      "parameters": {
-        "method": "DELETE",
-        "url": "={{ 'https://api.notion.com/v1/blocks/' + $json.id }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "notionApi",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Notion-Version",
-              "value": "2022-06-28"
-            }
-          ]
-        },
+        "addAttachments": "={{ Object.keys($binary || {}).length > 0 }}",
+        "attachmentsInputType": "binary",
+        "binaryPropertyName": "={{ Object.keys($binary || {}).join(',') }}",
+        "simplify": false,
         "options": {
-          "batching": {
-            "batch": {
-              "batchSize": 3,
-              "batchInterval": 1100
-            }
-          }
+          "system": "Se houver PDFs anexados, eles contêm a transcrição ou o diagnóstico comercial do lead. Leia todos por inteiro, junto com o texto do campo Diagnóstico (que pode estar vazio), e trate tudo como uma única fonte. Se o campo Diagnóstico trouxer respostas do lead a perguntas anteriores, elas valem mais que a transcrição: atualize gargalos, critérios e perguntas com base nelas e não repita perguntas já respondidas.\n\nQuando uma resposta do cliente confirmar ou corrigir algo da transcrição (nome de sistema, existência de material, número, disponibilidade), use a versão do cliente como verdade em todo o JSON e remova o alerta, gargalo ou pergunta correspondente. Nunca peça para confirmar de novo algo que o cliente já confirmou.\n\nNo campo \"criterios\", inclua também \"fluxo_confirmado\": true SOMENTE se o próprio cliente descreveu POR ESCRITO o processo atual passo a passo (quem faz cada etapa, em que ordem e com qual ferramenta), nas respostas às perguntas ou num documento enviado por ele. Uma descrição feita apenas na conversa da reunião, ou um resumo escrito pelo CITi, NÃO conta: nesses casos, false. Explique a resposta em \"justificativa_dimensionamento\".\n\nTranscrições automáticas erram nomes próprios (sistemas, empresas, pessoas). Ao formular perguntas ao cliente, não afirme nomes de sistemas, fornecedores ou ferramentas que você só viu na transcrição: pergunte de forma neutra (ex.: 'Qual sistema vocês usam hoje para registrar X?'). Se um nome parecer duvidoso e o cliente ainda não tiver confirmado, registre em alertas como 'nome possivelmente transcrito errado'.\n\nNão afirme que um material existe (protótipo, planilha, documento) se o cliente só descreveu ou mostrou uma ideia. Pergunte se existe algum material sobre aquilo.",
+          "maxTokens": 8000,
+          "temperature": 0
         }
       },
-      "id": "ef968e54-f2ff-464a-8d2b-f9151002b751",
-      "name": "Apagar bloco antigo",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "id": "dfce4e0d-149c-4064-8989-27824c4d39b1",
+      "name": "Triagem",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
       "position": [
-        2464,
-        352
+        656,
+        112
       ],
       "credentials": {
-        "notionApi": {
+        "anthropicApi": {
           "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (notionApi)"
+          "name": "Sua credencial (anthropicApi)"
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -557,8 +213,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        560,
-        320
+        1040,
+        96
       ]
     },
     {
@@ -587,8 +243,8 @@
       "type": "@n8n/n8n-nodes-langchain.anthropic",
       "typeVersion": 1,
       "position": [
-        672,
-        480
+        1296,
+        -32
       ],
       "credentials": {
         "anthropicApi": {
@@ -597,6 +253,409 @@
         }
       },
       "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Dados do lead (vindos do Notion), pela fase que gerou este item\nconst meta = (() => {\n  for (const n of ['Preparar triagem', 'Preparar precificação']) {\n    try { return $(n).item.json; } catch (e) {}\n  }\n  return {};\n})();\nconst texto = $input.item.json.content[0].text;\nlet t;\ntry {\n  t = JSON.parse(texto.slice(texto.indexOf('{'), texto.lastIndexOf('}') + 1));\n} catch (e) {\n  throw new Error('A triagem não voltou em JSON válido. Fim da resposta: ' + texto.slice(-300));\n}\nif (!t.criterios) throw new Error('A triagem não trouxe os critérios de dimensionamento.');\n\n// Parâmetros da skill (seção 0)\nconst VALOR_DIA = 152.98;\nconst VALOR_DIA_HIST = 87.72;\nconst PESOS = { gerente: 1.00, especialista: 0.75, analista_produto: 0.55, analista_dados_dev: 0.55 };\nconst ancora = Math.round(2.85 * 20 * VALOR_DIA_HIST);\nif (Math.abs(ancora - 5000) > 5) throw new Error('Âncora não fecha: ' + ancora);\n\n// Regra de dimensionamento (seção 4): a IA responde critérios, o código decide\nconst c = t.criterios;\nconst frentes = Number(c.frentes) || 1;\nconst usuarios = Number(c.usuarios_chave) || 99;\nconst time = c.dados_centrais === true\n  ? { gerente: 1, especialista: 1, analista_produto: 1, analista_dados_dev: 1 }\n  : { gerente: 1, especialista: 1, analista_produto: 2, analista_dados_dev: 0 };\nconst unidades = Object.keys(PESOS).reduce((s, k) => s + time[k] * PESOS[k], 0);\nconst precoDe = sem => Math.round((unidades * sem * 5 * VALOR_DIA) / 100) * 100;\n\n// A exceção de 4 semanas só vale com FATOS confirmados pelo cliente:\n// número de usuários dito por ele e fluxo atual descrito por ele por escrito.\n// Opinião do agente não reduz preço; vale a regra conservadora e a confirmação vira pergunta.\nlet aviso_criterio = '';\nlet semanas, regra; const confirmar = [];\nif (frentes >= 3) { semanas = 6; regra = '3+ frentes interconectadas → 6 semanas'; }\nelse if (frentes === 1 && usuarios <= 3) {\n  const sim = v => v === true || String(v).toLowerCase() === 'true';\n  if (!sim(c.usuarios_chave_confirmado)) confirmar.push('usuarios');\n  if (!sim(c.fluxo_confirmado)) confirmar.push('fluxo');\n  if (!('fluxo_confirmado' in c)) aviso_criterio = 'A IA não devolveu o critério fluxo_confirmado: confira a justificativa antes de aprovar.';\n  if (!confirmar.length) { semanas = 4; regra = '1 frente, até 3 usuários e fluxo atual confirmados pelo cliente → exceção de 4 semanas'; }\n  else { semanas = 5; regra = 'padrão → 5 semanas (a exceção de 4 semanas exige confirmação do cliente: ' + confirmar.map(x => x === 'usuarios' ? 'número de usuários' : 'fluxo atual por escrito').join(' e ') + ')'; }\n}\nelse { semanas = 5; regra = 'padrão → 5 semanas'; }\nif (c.colegiado_no_processo === true && semanas < 6) { semanas += 1; regra += '; decisão colegiada durante o Discovery → +1 semana'; }\nconst dias = semanas * 5;\nconst preco_alvo = precoDe(semanas);\nconst alertas = (t.alertas || []).slice();\nif (aviso_criterio) alertas.unshift(aviso_criterio);\nif (c.escopo_amplo_demais === true) alertas.unshift('Escopo amplo demais para 6 semanas: confira o recorte da frente âncora nas premissas.');\n\n// Fora do padrão: o preço continua o de tabela; quem decide ajuste (prêmio ou desconto) é um humano\nconst motivos = [];\nif (t.criticidade === 'alta') motivos.push('criticidade alta');\nif (c.escopo_amplo_demais === true) motivos.push('escopo amplo demais');\nif (c.trabalho_campo_distante === true) motivos.push('trabalho de campo distante');\nif (c.sensibilidade_preco === true) motivos.push('sensibilidade a preço ou desconto prometido');\nconst fora_do_padrao = motivos.length > 0;\nconst aviso_ajuste = fora_do_padrao\n  ? '⚠️ Preço de tabela. Caso fora do padrão (' + motivos.join(', ') + '): decida se cabe adicional de risco ou deslocamento, ou se o desconto prometido se mantém, antes de aprovar.'\n  : 'Caso padrão: preço de tabela sem ajuste.';\n\nconst emoji = { verde: '🟢', amarelo: '🟡', vermelho: '🔴', baixa: '🟢', media: '🟡', alta: '🔴' };\nconst min = s => s ? s.charAt(0).toLowerCase() + s.slice(1) : '';\nconst pc = (t.perguntas_cliente || []).sort((a, b) => (b.prioridade === true) - (a.prioridade === true));\nif (confirmar.includes('fluxo')) pc.unshift({ pergunta: 'Você consegue descrever em poucas linhas, passo a passo, como esse processo funciona hoje (quem faz cada etapa e em qual ferramenta)?', para_que: 'Definir o tamanho do Discovery', prioridade: true });\nif (confirmar.includes('usuarios')) pc.unshift({ pergunta: 'Quantas pessoas da equipe de vocês participam desse processo hoje e poderiam ser entrevistadas?', para_que: 'Definir o tamanho do Discovery', prioridade: true });\nconst pendencias = pc.map((p, i) => `${i + 1}. ${p.pergunta}${p.para_que ? ' (para ' + min(p.para_que) + ')' : ''}`).join('\\n');\nconst listaG = (t.gargalos || []).map(g => `- [${g.status}] ${g.item}: ${g.desbloqueia}${g.trecho ? ' (' + g.trecho + ')' : ''}`);\nif (confirmar.length) {\n  const oque = confirmar.map(x => x === 'usuarios' ? `o número de pessoas a entrevistar (o agente estimou ${usuarios})` : 'o passo a passo do processo atual, por escrito').join(' e ');\n  listaG.unshift(`- [bloqueia_preco] Falta o cliente confirmar ${oque}. Com isso confirmado, o Discovery cai para 4 semanas (R$ ${precoDe(4)}); por enquanto vale o preço conservador.`);\n}\nconst gargalos = listaG.join('\\n');\n\nreturn { json: {\n  fase: meta.fase, page_id: meta.page_id, gerente_id: meta.gerente_id,\n  lead: meta.Lead, gerente: meta['Gerente de contas'],\n  veredito: t.veredito, veredito_emoji: emoji[t.veredito] || '', motivo_veredito: t.motivo_veredito,\n  criticidade: t.criticidade, criticidade_emoji: emoji[t.criticidade] || '', motivo_criticidade: t.motivo_criticidade,\n  resumo: t.resumo, criterios: c, regra_aplicada: regra,\n  fora_do_padrao, aviso_ajuste,\n  semanas, dias, time, unidades: Number(unidades.toFixed(2)), preco_alvo,\n  justificativa_dimensionamento: `Regra aplicada: ${regra}.\\n${t.justificativa_dimensionamento || ''}`,\n  pendencias, gargalos,\n  perguntas_gerente: (t.perguntas_gerente || []).map((q, i) => `${i + 1}. ${q}`).join('\\n'),\n  premissas: (t.premissas || []).join('\\n'),\n  alertas: alertas.join('\\n')\n} };\n"
+      },
+      "id": "42e3ad00-9609-4bbf-bbc8-f3764e9761f8",
+      "name": "Calcular preço",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        128
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "<ID_NOTION>",
+              "leftValue": "={{ $json.fase }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "triagem"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "f4a23308-476c-445b-aabf-545e03e896ca",
+      "name": "Fase triagem?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Você é assistente da subárea de Produto do CITi, empresa júnior de tecnologia. Escreva uma mensagem de WhatsApp, em português, que o gerente de contas {{ $('Calcular preço').item.json.gerente }} vai enviar para o lead {{ $('Calcular preço').item.json.lead }}.\n\nObjetivo: conseguir as informações que faltam para fecharmos a proposta do Discovery.\n{{ $('Preparar triagem').item.json.rodada === 2 ? '\\nESTA É A SEGUNDA MENSAGEM: o cliente já respondeu a primeira rodada de perguntas. NÃO use a abertura padrão descrita abaixo. Comece com \"Oi! Agradeço pelas respostas, ajudaram bastante.\" e diga em uma frase que ficaram só alguns pontos para fecharmos a proposta. No máximo 4 perguntas. Se uma pergunta for para outra pessoa da empresa, peça para encaminhar. Não repita perguntas da primeira rodada.\\n' : '' }}\nRegras:\n- Comece assim: \"Oi! Aqui é {{ $('Calcular preço').item.json.gerente }}, do CITi. Tudo bem por aí?\". Não escreva \"vocês da\" seguido do nome da empresa; se citar o nome da empresa no texto, use o artigo certo (do/da) ou cite sem artigo.\n- Em seguida, explique em uma frase por que precisamos dessas informações.\n- Tom cordial, profissional e direto. Nada de jargão interno: não use as palavras triagem, semáforo, BANT, sprint, kickoff, pendências.\n- Liste as perguntas numeradas, simples e fáceis de responder. No máximo 7, com UMA pergunta por item: nunca junte duas perguntas diferentes no mesmo item para caber no limite. Se houver mais de 7, fique com as primeiras da lista (já estão em ordem de prioridade) e corte o resto. Junte só itens que perguntam a mesma coisa.\n- Não inclua perguntas que possam soar como desconfiança ou cobrança no WhatsApp: contratos, cláusulas, exclusividade, questões jurídicas, dúvidas sobre quem decide ou sobre orçamento aprovado. Essas ficam para a reunião; simplesmente omita.\n- Se alguma pendência tiver prazo mais curto que as outras, coloque essa pergunta primeiro e marque como *prioridade*.\n- Se um item pede documento, diga que pode mandar no formato que tiver (PDF, planilha, foto).\n- Perguntas sobre dinheiro devem ser suaves: pergunte por \"faixa de investimento em mente\", nunca \"orçamento previsto\".\n- Termine pedindo retorno em até 3 dias úteis e agradecendo.\n- Formate para WhatsApp: negrito com um asterisco só (*assim*), sem markdown, sem emojis.\n- Não invente nenhuma informação que não esteja nas pendências.\n- Nunca faça perguntas para quem está usando este fluxo. Se faltar o nome do gerente, comece só com \"Oi! Tudo bem?\". Se as pendências estiverem vazias, responda apenas: ERRO: pendências vazias.\n- Responda só com o texto da mensagem, sem comentários antes ou depois.\n- No agradecimento, use \"Agradeço\" em vez de \"obrigado\" ou \"obrigada\".\n\nPendências:\n{{ $('Calcular preço').item.json.pendencias }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "id": "59e67a6b-49ba-4a9c-bead-c43f950b8ba1",
+      "name": "Message a model",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        -96
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (anthropicApi)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const d = $('Calcular preço').item.json;\nconst LIDER = '<ID_NOTION>';\nconst hoje = $now.setZone('America/Recife').toFormat('dd/MM HH:mm');\nconst rt = s => { s = String(s || ''); const out = []; for (let i = 0; i < s.length; i += 1900) out.push({ type: 'text', text: { content: s.slice(i, i + 1900) } }); return out.length ? out : [{ type: 'text', text: { content: ' ' } }]; };\nconst para = s => ({ object: 'block', type: 'paragraph', paragraph: { rich_text: rt(s) } });\nconst h2 = s => ({ object: 'block', type: 'heading_2', heading_2: { rich_text: rt(s) } });\nconst h3 = s => ({ object: 'block', type: 'heading_3', heading_3: { rich_text: rt(s) } });\nconst bullet = s => ({ object: 'block', type: 'bulleted_list_item', bulleted_list_item: { rich_text: rt(s) } });\nconst quote = s => ({ object: 'block', type: 'quote', quote: { rich_text: rt(s) } });\nconst cinza = s => ({ object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: s }, annotations: { italic: true, color: 'gray' } }] } });\nconst lines = s => String(s || '').split('\\n').map(x => x.trim()).filter(Boolean);\nconst mention = (id, txt) => ({ object: 'block', type: 'paragraph', paragraph: { rich_text: [ ...(id ? [{ type: 'mention', mention: { type: 'user', user: { id } } }] : []), { type: 'text', text: { content: txt } } ] } });\nconst reais = n => 'R$ ' + String(n).replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');\nconst semaforo = { verde: 'Verde', amarelo: 'Amarelo', vermelho: 'Vermelho' }[d.veredito];\nconst crit = { baixa: 'Baixa', media: 'Média', alta: 'Alta' }[d.criticidade];\n\n// Custo desta rodada (preços do Sonnet 4.6 em US$ por milhão de tokens)\nconst custoDe = u => u ? ((u.input_tokens || 0) * 3 + (u.cache_creation_input_tokens || 0) * 3.75 + (u.cache_read_input_tokens || 0) * 0.3 + (u.output_tokens || 0) * 15) / 1e6 : 0;\nconst tokensDe = u => u ? (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.output_tokens || 0) : 0;\nconst usos = [];\ntry { usos.push($('Triagem').item.json.usage); } catch (e) {}\ntry { usos.push($('Revisar coerência').item.json.usage); } catch (e) {}\nif (d.fase === 'triagem') usos.push($input.item.json.usage);\nconst custo = usos.reduce((s, u) => s + custoDe(u), 0);\nconst tokens = usos.reduce((s, u) => s + tokensDe(u), 0);\nconst meta = (() => { for (const n of ['Preparar triagem', 'Preparar precificação']) { try { return $(n).item.json; } catch (e) {} } return {}; })();\nconst total = (Number(meta.custo_anterior) || 0) + custo;\nconst linhaCusto = cinza(`Custo desta rodada: US$ ${custo.toFixed(3)} (${Math.round(tokens / 1000)} mil tokens, ${usos.filter(Boolean).length} chamada(s)). Total do lead até aqui: US$ ${total.toFixed(2)}.`);\n\nlet children = [];\nconst properties = {};\nif (semaforo) properties['Semáforo'] = { select: { name: semaforo } };\nif (crit) properties['Criticidade'] = { select: { name: crit } };\nproperties['Custo do agente (US$)'] = { number: Math.round(total * 1000) / 1000 };\n\nif (d.fase === 'triagem') {\n  const msg = $input.item.json.content?.[0]?.text || '';\n  const nPerg = (msg.match(/^\\s*\\*?\\d+[.)]/gm) || []).length;\n  children = [\n    meta.rodada === 2\n      ? h2(`🔎 2ª rodada de perguntas · ${hoje} · ${d.veredito_emoji} ${semaforo || d.veredito} · ${nPerg} perguntas para o cliente`)\n      : h2(`🔎 Triagem · ${hoje} · ${d.veredito_emoji} ${semaforo || d.veredito} · ${nPerg} perguntas para o cliente`),\n    meta.rodada === 2\n      ? mention(d.gerente_id, ' a 2ª rodada está pronta: só o que as respostas deixaram em aberto. Envie ao cliente, cole as novas respostas abaixo das anteriores no campo \"Respostas do cliente\" e mude o Status para \"Pronto para precificar\".')\n      : mention(d.gerente_id, ' a triagem está pronta. Revise a mensagem abaixo, envie ao cliente pelo WhatsApp e cole as respostas no campo \"Respostas do cliente\". Depois mude o Status para \"Pronto para precificar\" ou, se as respostas abrirem novas dúvidas, para \"Mais perguntas\".'),\n    para(`Semáforo: ${d.veredito_emoji} ${d.veredito} — ${d.motivo_veredito}`),\n    para(`Criticidade: ${d.criticidade_emoji} ${d.criticidade} — ${d.motivo_criticidade}`),\n    h3('Riscos encontrados'),\n    ...lines(d.gargalos).slice(0, 12).map(l => bullet(l.replace(/^- /, ''))),\n    h3('Mensagem para o cliente (revise antes de enviar)'),\n    quote(msg),\n    h3('Para o gerente de contas confirmar'),\n    ...lines(d.perguntas_gerente).map(l => bullet(l.replace(/^\\d+\\.\\s*/, ''))),\n    h3('Alertas'),\n    ...lines(d.alertas).map(bullet),\n    linhaCusto\n  ];\n  properties['Status'] = { select: { name: 'Perguntas prontas' } };\n} else {\n  const t = d.time || {};\n  const analistas = (t.analista_produto || 0) + (t.analista_dados_dev || 0);\n  const timeTxt = `${t.gerente || 0} gerente, ${t.especialista || 0} especialista, ${analistas} analista(s)${t.analista_dados_dev ? ' (1 de dados/dev)' : ''}`;\n  const bloqueios = lines(d.gargalos).filter(l => l.includes('[bloqueia_preco]'));\n  children = [\n    h2(`💰 Precificação · ${hoje} · ${reais(d.preco_alvo)} · ${d.semanas} semanas${d.fora_do_padrao ? ' · ⚠️ fora do padrão' : ''}`),\n    mention(LIDER, ' a precificação está pronta para sua aprovação. Mude o Status para \"Aprovado\" ou \"Ajustar\" (e comente o ajuste).'),\n    ...(d.fora_do_padrao ? [para(d.aviso_ajuste)] : []),\n    para(`Preço de tabela: ${reais(d.preco_alvo)} · ${d.semanas} semanas · ${timeTxt}`),\n    para(d.justificativa_dimensionamento),\n    para(`Semáforo: ${d.veredito_emoji} ${d.veredito} — ${d.motivo_veredito}`),\n    h3('Ainda bloqueia o preço'),\n    ...(bloqueios.length ? bloqueios.map(l => bullet(l.replace(/^- \\[bloqueia_preco\\] /, ''))) : [para('Nada. As respostas do cliente cobriram o que faltava.')]),\n    h3('Alertas'),\n    ...lines(d.alertas).map(bullet),\n    linhaCusto\n  ];\n  properties['Status'] = { select: { name: 'Aguardando aprovação' } };\n  properties['Preço de tabela'] = { number: d.preco_alvo };\n  properties['Semanas'] = { number: d.semanas };\n  properties['Fora do padrão'] = { checkbox: !!d.fora_do_padrao };\n}\nreturn { json: { page_id: d.page_id, children: children.slice(0, 95), properties } };\n"
+      },
+      "id": "55f65953-397c-438e-9e3d-fca1019e99df",
+      "name": "Montar página",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        128
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.notion.com/v1/pages/' + $json.page_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: $json.properties }) }}",
+        "options": {}
+      },
+      "id": "5e83f0f6-88fd-4e1d-8d4b-f552f7fb7abc",
+      "name": "Atualizar propriedades",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2912,
+        112
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (notionApi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const meta = (() => {\n  for (const n of ['Preparar triagem', 'Preparar precificação', 'Preparar proposta']) {\n    try { const j = $(n).item.json; if (j && j.page_id) return j; } catch (e) {}\n  }\n  return {};\n})();\nif (!meta.page_id) throw new Error('Erro sem página associada: ' + JSON.stringify($json).slice(0, 300));\nconst LIDER = '<ID_NOTION>';\nconst e = $json.error;\nconst msg = String((e && (e.description || e.message)) || e || 'erro desconhecido').slice(0, 1500);\nconst semCredito = /credit balance is too low/i.test(msg);\nconst hoje = $now.setZone('America/Recife').toFormat('dd/MM HH:mm');\nconst etapa = { triagem: 'triagem', precificacao: 'precificação', proposta: 'geração da proposta' }[meta.fase] || 'análise';\nconst voltar = { triagem: 'Novo', precificacao: 'Pronto para precificar', proposta: 'Gerando proposta' }[meta.fase] || 'Novo';\nconst rich = [{ type: 'mention', mention: { type: 'user', user: { id: LIDER } } }];\nif (meta.gerente_id && meta.gerente_id !== LIDER) rich.push({ type: 'text', text: { content: ' ' } }, { type: 'mention', mention: { type: 'user', user: { id: meta.gerente_id } } });\nconst dica = semCredito ? 'Acabaram os créditos da API da Anthropic. Recarregue em console.anthropic.com (Billing)' : 'Confira os arquivos (PDF ou .txt funcionam melhor)';\nrich.push({ type: 'text', text: { content: ` o agente não conseguiu terminar a ${etapa} desta página. ${dica} e mude o Status para \"${voltar}\" para tentar de novo.` } });\nreturn { json: {\n  page_id: meta.page_id,\n  properties: { Status: { select: { name: 'Erro no agente' } } },\n  children: [\n    { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: '⚠️ Erro do agente · ' + hoje } }] } },\n    { object: 'block', type: 'paragraph', paragraph: { rich_text: rich } },\n    { object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: 'Detalhe técnico: ' + msg } }] } }\n  ]\n} };\n"
+      },
+      "id": "fd9aa9c0-ff21-4049-93b7-211596cd0732",
+      "name": "Montar erro",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.notion.com/v1/blocks/' + $json.id + '/children?page_size=100' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d42c8359-e892-4b5f-86cc-ccc1daea35ec",
+      "name": "Ler página",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3136,
+        112
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (notionApi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Seções antigas do agente viram títulos toggle; a nova seção fica aberta\nconst novo = (() => {\n  for (const n of ['Montar página', 'Montar erro', 'Montar decisão', 'Montar entrega']) {\n    try { return $(n).item.json; } catch (e) {}\n  }\n  return null;\n})();\nif (!novo) throw new Error('Não achei a nova seção a escrever.');\nconst pagina = $('Atualizar propriedades').item.json;\nconst BOT = pagina.last_edited_by?.id;\nconst blocks = $json.results || [];\nconst txt = b => (b[b.type]?.rich_text || []).map(r => r.plain_text).join('');\nconst MARCA = /^(🔎|💰|⚠️|✅|✏️|📄)/;\nconst ehMarca = b => b.type === 'heading_2' && !b.heading_2.is_toggleable && b.created_by?.id === BOT && MARCA.test(txt(b));\n\nconst secoes = []; let atual = null;\nfor (const b of blocks) {\n  if (ehMarca(b)) { atual = { head: b, body: [] }; secoes.push(atual); continue; }\n  if (!atual) continue;\n  if (b.type === 'heading_2' || b.created_by?.id !== BOT) { atual = null; continue; }\n  atual.body.push(b);\n}\n\nconst pedacos = (s, r) => { s = String(s || ''); const out = []; for (let i = 0; i < s.length; i += 1900) out.push({ type: 'text', text: { content: s.slice(i, i + 1900), link: r.text?.link || null }, annotations: r.annotations }); return out.length ? out : [{ type: 'text', text: { content: ' ' }, annotations: r.annotations }]; };\nconst limpa = rich => (rich || []).flatMap(r => {\n  if (r.type === 'mention' && r.mention?.type === 'user') return [{ type: 'mention', mention: { type: 'user', user: { id: r.mention.user.id } }, annotations: r.annotations }];\n  if (r.type === 'text') return pedacos(r.text.content, r);\n  return pedacos(r.plain_text || '', r);\n});\nconst TIPOS = ['paragraph', 'bulleted_list_item', 'numbered_list_item', 'quote', 'heading_3', 'callout'];\nconst copia = b => ({ object: 'block', type: b.type, [b.type]: { rich_text: limpa(b[b.type].rich_text) } });\nconst toggles = secoes.map(s => ({\n  object: 'block', type: 'heading_2',\n  heading_2: { rich_text: limpa(s.head.heading_2.rich_text), is_toggleable: true, children: s.body.filter(b => TIPOS.includes(b.type)).slice(0, 100).map(copia) }\n}));\nreturn { json: {\n  page_id: pagina.id,\n  children: [...toggles, ...novo.children].slice(0, 100),\n  delete_ids: secoes.flatMap(s => [s.head.id, ...s.body.map(b => b.id)])\n} };\n"
+      },
+      "id": "acb27323-c302-4f9b-9c87-6db5fbfebe16",
+      "name": "Recolher histórico",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.notion.com/v1/blocks/' + $('Recolher histórico').item.json.page_id + '/children' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ children: $('Recolher histórico').item.json.children }) }}",
+        "options": {}
+      },
+      "id": "fc52bf0b-b94e-46cf-b1e6-3c4071016fd4",
+      "name": "Escrever na página",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3584,
+        16
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (notionApi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().flatMap(it => (it.json.delete_ids || []).map(id => ({ json: { id } })));"
+      },
+      "id": "34984353-89b9-418a-8f8d-67448f7b9eb7",
+      "name": "Blocos a apagar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3584,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ 'https://api.notion.com/v1/blocks/' + $json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 3,
+              "batchInterval": 1100
+            }
+          }
+        }
+      },
+      "id": "ef968e54-f2ff-464a-8d2b-f9151002b751",
+      "name": "Apagar bloco antigo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3808,
+        304
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (notionApi)"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "dataSourceId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "<ID_NOTION>"
+        },
+        "returnAll": true,
+        "filterType": "json",
+        "filterJson": "{\"property\":\"Status\",\"select\":{\"equals\":\"Pronto para precificar\"}}",
+        "simple": false,
+        "options": {
+          "downloadFiles": true
+        }
+      },
+      "id": "f7ae4c69-48dc-4564-95bf-27b4af47fe16",
+      "name": "Buscar para precificar",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        240
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (notionApi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Um item por PDF (para extrair o texto) + um item com os dados da página, textos e imagens\nconst out = [];\nconst items = $input.all();\nfor (let i = 0; i < items.length; i++) {\n  const it = items[i];\n  const textos = []; const imagens = {}; const ignorados = [];\n  for (const [k, b] of Object.entries(it.binary || {})) {\n    if (!k.startsWith('Transcrição')) continue; // ignora outros campos de arquivo (ex.: a Proposta gerada)\n    const mt = b.mimeType || ''; const nome = b.fileName || k;\n    if (mt === 'application/pdf') out.push({ json: { page_id: it.json.id, tipo: 'pdf', nome }, binary: { data: b }, pairedItem: { item: i } });\n    else if (mt.startsWith('image/')) imagens[k] = b;\n    else if (mt.startsWith('text/') || /\\.(txt|md|vtt|srt|csv)$/i.test(nome)) {\n      const buf = await this.helpers.getBinaryDataBuffer(i, k);\n      textos.push('--- Arquivo ' + nome + ' ---\\n' + buf.toString('utf8'));\n    } else ignorados.push(nome + ' (' + (mt || 'tipo desconhecido') + ')');\n  }\n  out.push({ json: { page_id: it.json.id, tipo: 'meta', props: it.json.properties || {}, textos, imagens, ignorados }, pairedItem: { item: i } });\n}\nreturn out;\n"
+      },
+      "id": "365eaa13-6878-4646-8f39-37baf715fb5e",
+      "name": "Separar arquivos (preço)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "6b26f0e5-b7fe-451d-b5d0-30cfb3d6e0d8",
+      "name": "Extrair PDF (preço)",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        240
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Junta tudo por página. PDF com texto normal vai como texto (barato);\n// PDF com pouco texto por página (escaneado, prints) continua indo como PDF completo.\nconst FASE = 'precificacao';\nconst sep = $('Separar arquivos (preço)').all();\nconst ext = $input.all();\nconst paginas = new Map();\nfor (let i = 0; i < sep.length; i++) {\n  const s = sep[i]; const pid = s.json.page_id;\n  if (!paginas.has(pid)) paginas.set(pid, { idx: i, meta: null, pdfTextos: [], anexos: {} });\n  const pg = paginas.get(pid);\n  if (s.json.tipo === 'meta') { pg.meta = s.json; continue; }\n  const e = ext[i]?.json || {};\n  const texto = String(e.text || '').replace(/\\n{3,}/g, '\\n\\n').trim();\n  const nPag = Number(e.numpages) || 1;\n  if (texto && texto.length / nPag >= 300) pg.pdfTextos.push('--- Transcrição em PDF: ' + s.json.nome + ' (' + nPag + ' páginas) ---\\n' + texto);\n  else pg.anexos['pdf_' + Object.keys(pg.anexos).length] = s.binary.data;\n}\nconst out = [];\nfor (const [pid, pg] of paginas) {\n  const m = pg.meta || { props: {}, textos: [], imagens: {}, ignorados: [] };\n  const p = m.props;\n  const lead = (p['Lead']?.title || []).map(t => t.plain_text).join('') || 'Lead';\n  const people = p['Gerente de contas']?.people || [];\n  const resp = (p['Respostas do cliente']?.rich_text || []).map(t => t.plain_text).join('');\n  let diag = [...pg.pdfTextos, ...m.textos].join('\\n\\n');\n  if (diag.length > 400000) diag = diag.slice(0, 400000) + '\\n[...cortado por tamanho]';\n  if (m.ignorados.length) diag += '\\n\\n[Aviso: não foi possível ler estes arquivos; registre em alertas: ' + m.ignorados.join(', ') + ']';\n  if (FASE === 'triagem') { if (resp) diag += '\\n\\nRespostas do cliente às perguntas enviadas:\\n' + resp; }\n  else diag += resp ? '\\n\\nRespostas do cliente às perguntas enviadas (valem mais que a transcrição):\\n' + resp : '\\n\\nO cliente ainda não respondeu as perguntas; precifique com premissas conservadoras declaradas.';\n  out.push({ json: { fase: FASE, page_id: pid, Lead: lead, 'Gerente de contas': people[0]?.name || '', gerente_id: people[0]?.id || '', custo_anterior: p['Custo do agente (US$)']?.number || 0, 'Diagnóstico': diag.trim(), arquivos_como_texto: pg.pdfTextos.length, arquivos_como_pdf: Object.keys(pg.anexos).length }, binary: { ...pg.anexos, ...m.imagens }, pairedItem: { item: pg.idx } });\n}\nreturn out;\n"
+      },
+      "id": "72614811-3add-475b-be57-736e5d7f2a7f",
+      "name": "Ler arquivos (preço)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.page_id }}"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Analisando"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "065134df-651e-4453-bdae-f021edec1d0c",
+      "name": "Marcar analisando (preço)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        208,
+        240
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (notionApi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const s = $('Ler arquivos (preço)').item;\nreturn { json: s.json, binary: s.binary || {} };"
+      },
+      "id": "034e17fa-3677-41aa-8fc7-b923a3f25be3",
+      "name": "Preparar precificação",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        240
+      ]
     },
     {
       "parameters": {
@@ -618,8 +677,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 3,
       "position": [
-        -224,
-        640
+        -480,
+        464
       ],
       "credentials": {
         "notionApi": {
@@ -641,77 +700,6 @@
         1344,
         640
       ]
-    },
-    {
-      "parameters": {},
-      "id": "f00794b2-1251-4afe-8f7d-195e4d0e527b",
-      "name": "Subir skill (manual)",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -448,
-        1008
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const conteudo = \"---\\nname: \\\"proposta-discovery-enterprise\\\"\\ndescription: \\\"Gera a proposta comercial de Discovery Enterprise da CITi para o cliente (.docx + PDF, padrão de referência da CITi): contexto, cenário atual, sprints, entregáveis, dependências do cliente e investimento.\\\"\\n---\\n\\n# Proposta de Discovery Enterprise (CITi)\\n\\nUse quando for transformar um diagnóstico comercial (transcrição, notas da gerente de contas, handoff) em **proposta para o cliente** de Discovery Enterprise. Exemplos: \\\"monta a proposta do [cliente]\\\", \\\"faz a proposta no modelo de referência\\\", \\\"gera o documento pro cliente assinar\\\".\\n\\nNão é a triagem/precificação interna (skill `precificacao-discovery-enterprise`), nem o diagnóstico AS-IS da Fase 1, nem o PRD ou o Business Case finais.\\n\\n---\\n\\n## 1. Antes de escrever\\n\\n1. **Leia tudo**: transcrição completa, notas da gerente de contas e qualquer material anexo.\\n2. **Preço e time**: se a precificação já foi feita na conversa, use o valor fechado. Se não, rode a lógica da seção 4 abaixo (ou a skill `precificacao-discovery-enterprise`) antes de escrever.\\n3. **Confira os números do cliente contra a fonte.** Notas comerciais costumam arredondar para cima ou tratar estimativas como fato. Para cada número que entrar na proposta, verifique na transcrição se foi:\\n   - medido/mostrado pelo cliente → pode entrar como fato\\n   - estimado de cabeça na reunião → entra como \\\"estimado pela equipe em até…\\\" ou \\\"da ordem de…\\\"\\n   - projeção da gerente de contas → **não entra** como fato\\n   Se dois números do cliente se contradizem, use o mais conservador e avise a Marina.\\n4. **Separe pedido × necessidade e ache o problema-raiz** (o que precisa ser resolvido antes do que o cliente pediu). É ele que organiza a proposta.\\n5. Se faltar o nome completo/razão social do cliente ou o decisor, use o nome curto e **não cite decisor**; avise no fim.\\n\\n## 2. Estrutura (9 seções, nesta ordem)\\n\\n**Cabeçalho**\\n- Título: \\\"Proposta de Discovery Enterprise\\\"\\n- Linha: \\\"[Cliente]  ⟷  CITi — Centro Integrado de Tecnologia da Informação (CIn/UFPE)\\\"\\n- Subtítulo em itálico cinza, uma frase: o que o Discovery diagnostica/desenha + \\\"com Business Case para a decisão de investimento\\\".\\n\\n**Resumo para a diretoria** (caixa azul-clara com borda esquerda)\\n- 1º parágrafo: o que o cliente já faz bem + o que ainda é manual + o que isso trava.\\n- 2º parágrafo: \\\"Antes de desenvolver, o Discovery Enterprise mede…, testa…, desenha… — entregando um Business Case com ROI e payback…\\\"\\n- Linha final: **Prazo:** X semanas (Y dias úteis). **Investimento:** R$ X. **Compromisso:** baixo — etapa autônoma, com decisão formal de seguir (ou não) para o desenvolvimento ao final.\\n\\n**1. Contexto: por que agora** — quem é o cliente, maturidade, o que está mudando (crescimento, expansão), e termine com \\\"A pergunta que este projeto responde é: *…*\\\".\\n\\n**2. O que mapeamos: o cenário atual** — uma frase sobre a reunião de diagnóstico + tabela de 3 colunas: *Etapa (ou Setor) · O que acontece hoje · O que isso representa*. 3 a 5 linhas. Números só se passaram pelo filtro do passo 1.3.\\n\\n**3. O problema-raiz** — o que precisa ser resolvido primeiro e por quê; o risco de automatizar sem resolver (\\\"automatizar um erro/uma dúvida — mais rápido\\\"). Se parte do problema pode ser regra simples em vez de IA, diga — isso afeta custo recorrente.\\n\\n**4. Por que um Discovery — e não partir direto para o desenvolvimento** — 3 a 4 bullets com título em negrito: evita construir sobre suposição; custo de operação sob controle (quando houver custo por uso/IA); decisão de investimento defensável; baixo risco e reversível (\\\"decisão formal, ao final, sobre seguir para o desenvolvimento\\\" — livre para executar com a CITi, time interno ou terceiros).\\n\\n**5. O que o Discovery faz: as N sprints** — linha em itálico com os blocos. Cada sprint tem três linhas: **O que fazemos. / Por quê. / O que ataca.**\\n\\n**6. O que [Cliente] recebe ao final** — bullets de entregáveis (regras na seção 3 abaixo) + parágrafo em itálico de propriedade intelectual: \\\"Toda a propriedade intelectual dos materiais produzidos pertence à [Cliente] após a quitação, sem qualquer bloqueio tecnológico — os artefatos são entregues de forma a permitir continuidade pela CITi, pelo time da [Cliente] ou por terceiros.\\\"\\n\\n**7. O que não faz parte deste Discovery** — sempre: desenvolvimento/implementação (Delivery, proposta específica) e integração efetiva com os sistemas (desenhada no Discovery, executada no Delivery). Some o que o cliente disse não ser prioridade e o que é responsabilidade dele (ex.: negociação com terceiros).\\n\\n**8. O que precisamos da [Cliente]** — obrigatória. Ver seção 3.\\n\\n**9. Investimento e próximos passos** — caixa: \\\"Investimento: R$ X · Prazo: N semanas (Y dias úteis) · até 2× de R$ X/2\\\". Parágrafo \\\"O retorno paga o projeto rapidamente.\\\" com o argumento de valor mais sólido (capacidade liberada, contratação evitada, crescimento destravado — sem número não validado). Linha padrão: \\\"Inclui 1 mês de suporte de cortesia após a entrega. O prazo começa a correr com a assinatura e segue as condições de acesso descritas na seção 8.\\\" Próximos passos: alinhamento, assinatura, kickoff.\\n\\nO texto de suporte e de Delivery fica sempre nessa forma padrão; não é escopo de Produto detalhá-lo.\\n\\n## 3. Sprints e regras para não prometer o que depende do cliente\\n\\n**Padrão: 5 semanas = 5 sprints, em três blocos** — Diagnóstico e Viabilidade (2 sprints), Desenho da Solução (2 sprints) e Business Case (1 sprint):\\n1. **Diagnóstico e Viabilidade I** — imersão/entrevistas com as áreas, rastreamento do fluxo ponta a ponta, levantamento de volumes, taxa de erro e **estimativa** de horas; acesso aos sistemas e dados.\\n2. **Diagnóstico e Viabilidade II** — aprofundamento na raiz; teste de viabilidade do ponto crítico sobre dados reais; AS-IS consolidado e priorização. Termina com a **decisão sobre o caminho da solução**.\\n3. **Desenho da Solução I** — arquitetura da solução priorizada, integrável ao que já existe, e fluxo futuro (TO-BE), com o responsável técnico do cliente.\\n4. **Desenho da Solução II** — wireframes/protótipo navegável dos fluxos críticos, testado com quem vai usar.\\n5. **Business Case e Roadmap** — ROI, payback, custo recorrente estimado, matriz de riscos, roadmap faseado e proposta técnico-comercial para o desenvolvimento.\\n\\n**Exceção: 4 semanas = 4 sprints** (só se a precificação justificar — 1 frente bem delimitada, poucos usuários, fluxo já bem descrito): Diagnóstico e Dados · Viabilidade do ponto crítico · Desenho da Solução · Business Case e Roadmap.\\n\\n**6 semanas** (3+ frentes): acrescente uma sprint de diagnóstico ou de desenho, conforme onde está a complexidade.\\n\\n**Decisão no meio do projeto**: logo depois da sprint de viabilidade, inclua uma caixa \\\"Decisão sobre o caminho da solução\\\" dizendo o que acontece se o teste não der certo (caminho alternativo concreto) e que \\\"a decisão define o caminho da solução, não a continuidade do projeto\\\". Não use \\\"go/no-go\\\" no meio do projeto.\\n\\n**Redação dos entregáveis** — prometa o trabalho, não o resultado:\\n- horas → \\\"estimativa de horas\\\" (clientes raramente medem)\\n- teste/viabilidade → \\\"resultado do teste… incluindo em quais casos é possível e em quais não é\\\"\\n- arquitetura → \\\"em nível de desenho, validada com o responsável técnico do cliente\\\"\\n- Business Case → \\\"com base em dados do cliente ou, na falta deles, em referências de mercado\\\"\\n- protótipo → \\\"validado com a equipe\\\" (as sessões entram na seção 8)\\n\\n**Seção 8 — tabela O que · Para quê · Quando**, com tudo que só o cliente pode dar:\\n- acessos de leitura/exports dos sistemas → até o 3º dia útil\\n- dados históricos necessários ao teste de viabilidade → até o 3º dia útil\\n- informações técnicas (ferramentas, APIs, planos, custos por uso) → Sprint 1\\n- disponibilidade da equipe (entrevistas na Sprint 1; 1–2 sessões de teste do protótipo na sprint de desenho) → agendado no kickoff\\n- conversa com o responsável técnico/pelas automações → sprint de arquitetura\\n- custo mensal aproximado da equipe (opcional) → sprint de Business Case\\nFeche com: \\\"Se algum desses itens atrasar, o cronograma é ajustado na mesma medida.\\\" Se houver dados de clientes finais/pessoas: \\\"tratados com confidencialidade e em conformidade com a LGPD; podem ser fornecidos com identificadores pseudonimizados\\\".\\n\\n**Números**: nunca use na proposta um número que veio só das notas comerciais ou de um chute na reunião. Prefira \\\"até\\\", \\\"da ordem de\\\", \\\"estimado pela equipe\\\", e deixe a medição para a Sprint 1.\\n\\n## 4. Preço (quando ainda não foi fechado)\\n\\n**Referência fixa: o time completo — 1 Gerente + 1 Especialista de Produto + 1 Analista de Produto + 1 Analista de Dados ou Dev — por 5 semanas custa R$ 10.900.** Todo o resto deriva dessa referência.\\n\\nValor-dia praticado (dia-Gerente, peso 1,00): **R$ 152,98** (= R$ 10.900 ÷ 2,85 unidades ÷ 25 dias). Pesos: Gerente 1,00 · Especialista 0,75 · Analista de Produto 0,55 · Analista de Dados ou Dev 0,55.\\n\\nPreço = soma dos pesos × dias úteis × R$ 152,98, arredondado para a centena. Rode em Python.\\n\\n| Time | Unidades | 5 semanas (padrão) | 4 semanas (exceção) | 6 semanas |\\n|---|---|---|---|---|\\n| **1 Ger + 1 Esp + 1 Analista de Produto + 1 Analista de Dados ou Dev** | 2,85 | **R$ 10.900** | ~R$ 8.700 | ~R$ 13.100 |\\n| 1 Ger + 1 Esp + 2 Analistas de Produto | 2,85 | R$ 10.900 | ~R$ 8.700 | ~R$ 13.100 |\\n| 1 Ger + 1 Esp + 1 Analista (Produto, Dados ou Dev) | 2,30 | ~R$ 8.800 | ~R$ 7.000 | ~R$ 10.600 |\\n\\nParcelamento padrão: até 2×. Se a referência, o valor-dia ou os pesos mudarem, atualize esta seção e a skill de precificação juntas.\\n\\nAjuste para cima só com justificativa (cliente de alto valor e porte, dor com valor mensal claro), até o nível do cliente de referência (R$ 189,47/dia → R$ 13.500 para o time completo em 5 semanas).\\nConsistência: um cliente menor ou mais sensível a preço não deve pagar mais por semana do que um cliente maior com escopo maior (padrão: R$ 2.180/semana; teto de referência: R$ 2.700/semana).\\n\\n## 5. Visual e geração do arquivo\\n\\nGere .docx com docx-js (leia a skill `docx` antes) e converta para PDF. A4, margens 2 cm, Calibri.\\n\\n```js\\nconst BLUE='1F4E8C', ACC='2E75B6', LIGHT='EAF1FB', GREY='666666', FONT='Calibri', W=9638;\\nconst r=(t,o={})=>new TextRun({text:t,font:FONT,size:21,...o});\\nconst p=(runs,o={})=>new Paragraph({spacing:{after:120,line:288},children:Array.isArray(runs)?runs:[r(runs)],...o});\\n// Seção: número em ACC + título em BLUE, size 28, bold, spacing before 280\\n// Bullet: numbering LevelFormat.BULLET '●', indent left 540 hanging 300\\n// Sprint: título BLUE bold 22; rótulos 'O que fazemos.' / 'Por quê.' / 'O que ataca.' em ACC bold\\n// Tabelas: cabeçalho fill BLUE texto branco, bordas BFBFBF size 4, texto size 19, cantSplit, tableHeader\\n// Caixas (resumo, decisão, investimento): fill LIGHT, borda esquerda ACC size 24\\n// Título: BLUE bold 40; linha cliente ⟷ CITi: ACC bold 23; subtítulo: itálico GREY 20 com borda inferior ACC\\n// Rodapé centralizado GREY 17: 'CITi — Centro Integrado de Tecnologia da Informação · CIn/UFPE · Recife-PE'\\n```\\n\\nDimensões: tabela do cenário atual 1900 / 4000 / 3738; tabela da seção 8 4300 / 3338 / 2000 (somam W).\\n\\n## 6. Verificação antes de entregar\\n\\n1. Converta para PDF e renderize as páginas (`pdftoppm`); olhe cada uma.\\n2. Sem página quase vazia nem seção 9 separada da caixa de investimento (use `keepNext` no título da seção 9, não quebra de página).\\n3. O preço, o prazo, o número de sprints e o parcelamento batem no resumo, na seção 5 e na seção 9 (`pdftotext | grep \\\"R\\\\$\\\"`).\\n4. Nenhum número não validado (passo 1.3) e nenhum decisor citado sem confirmação.\\n5. Meta: 4 a 5 páginas.\\n\\nEntregue .docx e .pdf. Na resposta, em poucas linhas: preço e como chegou nele, e o que a Marina precisa conferir antes de enviar (números a validar, razão social, decisor).\";\nconst bin = await this.helpers.prepareBinaryData(Buffer.from(conteudo, 'utf8'), 'proposta-discovery-enterprise/SKILL.md', 'text/markdown');\nreturn [{ json: { tamanho: conteudo.length }, binary: { skill: bin } }];"
-      },
-      "id": "396e1128-c488-419b-a26b-c26b8bbd197c",
-      "name": "Arquivo da skill",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -224,
-        1008
-      ]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.anthropic.com/v1/skills",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "anthropicApi",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "anthropic-version",
-              "value": "2023-06-01"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "multipart-form-data",
-        "bodyParameters": {
-          "parameters": [
-            {
-              "parameterType": "formBinaryData",
-              "name": "files[]",
-              "inputDataFieldName": "skill"
-            },
-            {
-              "name": "display_name",
-              "value": "Proposta Discovery Enterprise (CITi)"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "95015d46-eb62-40a1-add6-aed3ba649262",
-      "name": "Criar skill na Anthropic",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        0,
-        1008
-      ],
-      "credentials": {
-        "anthropicApi": {
-          "id": "CREDENCIAL_REMOVIDA",
-          "name": "Sua credencial (anthropicApi)"
-        }
-      }
     },
     {
       "parameters": {
@@ -744,6 +732,34 @@
           "name": "Sua credencial (notionApi)"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Um item por PDF (para extrair o texto); arquivos de texto já são lidos aqui\nconst out = [];\nconst items = $input.all();\nfor (let i = 0; i < items.length; i++) {\n  const it = items[i];\n  const textos = []; const ignorados = [];\n  let pdfs = 0;\n  for (const [k, b] of Object.entries(it.binary || {})) {\n    if (!k.startsWith('Transcrição')) continue; // ignora outros campos de arquivo (ex.: a Proposta gerada)\n    const mt = b.mimeType || ''; const nome = b.fileName || k;\n    if (mt === 'application/pdf') { pdfs++; out.push({ json: { nome }, binary: { data: b }, pairedItem: { item: i } }); }\n    else if (mt.startsWith('text/') || /\\.(txt|md|vtt|srt|csv)$/i.test(nome)) {\n      const buf = await this.helpers.getBinaryDataBuffer(i, k);\n      textos.push('--- Arquivo ' + nome + ' ---\\n' + buf.toString('utf8'));\n    } else ignorados.push(nome);\n  }\n  out.push({ json: { nome: '__textos__', textos, ignorados }, pairedItem: { item: i } });\n}\nreturn out;\n"
+      },
+      "id": "4802f561-6084-477d-9adc-04701bc713e9",
+      "name": "Separar arquivos (proposta)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "bcc9fa56-9766-45c1-b683-397fa0dc338d",
+      "name": "Extrair texto do PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        1808
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -873,7 +889,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        896,
+        880,
         1408
       ]
     },
@@ -886,7 +902,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        896,
+        1152,
         1600
       ],
       "onError": "continueErrorOutput"
@@ -1092,109 +1108,78 @@
       "onError": "continueErrorOutput"
     },
     {
-      "parameters": {
-        "jsCode": "// Um item por PDF (para extrair o texto); arquivos de texto já são lidos aqui\nconst out = [];\nconst items = $input.all();\nfor (let i = 0; i < items.length; i++) {\n  const it = items[i];\n  const textos = []; const ignorados = [];\n  let pdfs = 0;\n  for (const [k, b] of Object.entries(it.binary || {})) {\n    if (!k.startsWith('Transcrição')) continue; // ignora outros campos de arquivo (ex.: a Proposta gerada)\n    const mt = b.mimeType || ''; const nome = b.fileName || k;\n    if (mt === 'application/pdf') { pdfs++; out.push({ json: { nome }, binary: { data: b }, pairedItem: { item: i } }); }\n    else if (mt.startsWith('text/') || /\\.(txt|md|vtt|srt|csv)$/i.test(nome)) {\n      const buf = await this.helpers.getBinaryDataBuffer(i, k);\n      textos.push('--- Arquivo ' + nome + ' ---\\n' + buf.toString('utf8'));\n    } else ignorados.push(nome);\n  }\n  out.push({ json: { nome: '__textos__', textos, ignorados }, pairedItem: { item: i } });\n}\nreturn out;\n"
-      },
-      "id": "4802f561-6084-477d-9adc-04701bc713e9",
-      "name": "Separar arquivos (proposta)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "parameters": {},
+      "id": "f00794b2-1251-4afe-8f7d-195e4d0e527b",
+      "name": "Subir skill (manual)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
       "position": [
-        -224,
-        1600
+        -448,
+        1008
       ]
     },
     {
       "parameters": {
-        "operation": "pdf",
-        "options": {}
+        "jsCode": "const conteudo = \"---\\nname: \\\"proposta-discovery-enterprise\\\"\\ndescription: \\\"Gera a proposta comercial de Discovery Enterprise da CITi para o cliente (.docx + PDF, padrão de referência do CITi): contexto, cenário atual, sprints, entregáveis, dependências do cliente e investimento.\\\"\\n---\\n\\n# Proposta de Discovery Enterprise (CITi)\\n\\nUse quando for transformar um diagnóstico comercial (transcrição, notas da gerente de contas, handoff) em **proposta para o cliente** de Discovery Enterprise. Exemplos: \\\"monta a proposta do [cliente]\\\", \\\"faz a proposta no modelo de referência\\\", \\\"gera o documento pro cliente assinar\\\".\\n\\nNão é a triagem/precificação interna (skill `precificacao-discovery-enterprise`), nem o diagnóstico AS-IS da Fase 1, nem o PRD ou o Business Case finais.\\n\\n---\\n\\n## 1. Antes de escrever\\n\\n1. **Leia tudo**: transcrição completa, notas da gerente de contas e qualquer material anexo.\\n2. **Preço e time**: se a precificação já foi feita na conversa, use o valor fechado. Se não, rode a lógica da seção 4 abaixo (ou a skill `precificacao-discovery-enterprise`) antes de escrever.\\n3. **Confira os números do cliente contra a fonte.** Notas comerciais costumam arredondar para cima ou tratar estimativas como fato. Para cada número que entrar na proposta, verifique na transcrição se foi:\\n   - medido/mostrado pelo cliente → pode entrar como fato\\n   - estimado de cabeça na reunião → entra como \\\"estimado pela equipe em até…\\\" ou \\\"da ordem de…\\\"\\n   - projeção da gerente de contas → **não entra** como fato\\n   Se dois números do cliente se contradizem, use o mais conservador e avise a Marina.\\n4. **Separe pedido × necessidade e ache o problema-raiz** (o que precisa ser resolvido antes do que o cliente pediu). É ele que organiza a proposta.\\n5. Se faltar o nome completo/razão social do cliente ou o decisor, use o nome curto e **não cite decisor**; avise no fim.\\n\\n## 2. Estrutura (9 seções, nesta ordem)\\n\\n**Cabeçalho**\\n- Título: \\\"Proposta de Discovery Enterprise\\\"\\n- Linha: \\\"[Cliente]  ⟷  CITi — Centro Integrado de Tecnologia da Informação (CIn/UFPE)\\\"\\n- Subtítulo em itálico cinza, uma frase: o que o Discovery diagnostica/desenha + \\\"com Business Case para a decisão de investimento\\\".\\n\\n**Resumo para a diretoria** (caixa azul-clara com borda esquerda)\\n- 1º parágrafo: o que o cliente já faz bem + o que ainda é manual + o que isso trava.\\n- 2º parágrafo: \\\"Antes de desenvolver, o Discovery Enterprise mede…, testa…, desenha… — entregando um Business Case com ROI e payback…\\\"\\n- Linha final: **Prazo:** X semanas (Y dias úteis). **Investimento:** R$ X. **Compromisso:** baixo — etapa autônoma, com decisão formal de seguir (ou não) para o desenvolvimento ao final.\\n\\n**1. Contexto: por que agora** — quem é o cliente, maturidade, o que está mudando (crescimento, expansão), e termine com \\\"A pergunta que este projeto responde é: *…*\\\".\\n\\n**2. O que mapeamos: o cenário atual** — uma frase sobre a reunião de diagnóstico + tabela de 3 colunas: *Etapa (ou Setor) · O que acontece hoje · O que isso representa*. 3 a 5 linhas. Números só se passaram pelo filtro do passo 1.3.\\n\\n**3. O problema-raiz** — o que precisa ser resolvido primeiro e por quê; o risco de automatizar sem resolver (\\\"automatizar um erro/uma dúvida — mais rápido\\\"). Se parte do problema pode ser regra simples em vez de IA, diga — isso afeta custo recorrente.\\n\\n**4. Por que um Discovery — e não partir direto para o desenvolvimento** — 3 a 4 bullets com título em negrito: evita construir sobre suposição; custo de operação sob controle (quando houver custo por uso/IA); decisão de investimento defensável; baixo risco e reversível (\\\"decisão formal, ao final, sobre seguir para o desenvolvimento\\\" — livre para executar com a CITi, time interno ou terceiros).\\n\\n**5. O que o Discovery faz: as N sprints** — linha em itálico com os blocos. Cada sprint tem três linhas: **O que fazemos. / Por quê. / O que ataca.**\\n\\n**6. O que [Cliente] recebe ao final** — bullets de entregáveis (regras na seção 3 abaixo) + parágrafo em itálico de propriedade intelectual: \\\"Toda a propriedade intelectual dos materiais produzidos pertence à [Cliente] após a quitação, sem qualquer bloqueio tecnológico — os artefatos são entregues de forma a permitir continuidade pela CITi, pelo time da [Cliente] ou por terceiros.\\\"\\n\\n**7. O que não faz parte deste Discovery** — sempre: desenvolvimento/implementação (Delivery, proposta específica) e integração efetiva com os sistemas (desenhada no Discovery, executada no Delivery). Some o que o cliente disse não ser prioridade e o que é responsabilidade dele (ex.: negociação com terceiros).\\n\\n**8. O que precisamos da [Cliente]** — obrigatória. Ver seção 3.\\n\\n**9. Investimento e próximos passos** — caixa: \\\"Investimento: R$ X · Prazo: N semanas (Y dias úteis) · até 2× de R$ X/2\\\". Parágrafo \\\"O retorno paga o projeto rapidamente.\\\" com o argumento de valor mais sólido (capacidade liberada, contratação evitada, crescimento destravado — sem número não validado). Linha padrão: \\\"Inclui 1 mês de suporte de cortesia após a entrega. O prazo começa a correr com a assinatura e segue as condições de acesso descritas na seção 8.\\\" Próximos passos: alinhamento, assinatura, kickoff.\\n\\nO texto de suporte e de Delivery fica sempre nessa forma padrão; não é escopo de Produto detalhá-lo.\\n\\n## 3. Sprints e regras para não prometer o que depende do cliente\\n\\n**Padrão: 5 semanas = 5 sprints, em três blocos** — Diagnóstico e Viabilidade (2 sprints), Desenho da Solução (2 sprints) e Business Case (1 sprint):\\n1. **Diagnóstico e Viabilidade I** — imersão/entrevistas com as áreas, rastreamento do fluxo ponta a ponta, levantamento de volumes, taxa de erro e **estimativa** de horas; acesso aos sistemas e dados.\\n2. **Diagnóstico e Viabilidade II** — aprofundamento na raiz; teste de viabilidade do ponto crítico sobre dados reais; AS-IS consolidado e priorização. Termina com a **decisão sobre o caminho da solução**.\\n3. **Desenho da Solução I** — arquitetura da solução priorizada, integrável ao que já existe, e fluxo futuro (TO-BE), com o responsável técnico do cliente.\\n4. **Desenho da Solução II** — wireframes/protótipo navegável dos fluxos críticos, testado com quem vai usar.\\n5. **Business Case e Roadmap** — ROI, payback, custo recorrente estimado, matriz de riscos, roadmap faseado e proposta técnico-comercial para o desenvolvimento.\\n\\n**Exceção: 4 semanas = 4 sprints** (só se a precificação justificar — 1 frente bem delimitada, poucos usuários, fluxo já bem descrito): Diagnóstico e Dados · Viabilidade do ponto crítico · Desenho da Solução · Business Case e Roadmap.\\n\\n**6 semanas** (3+ frentes): acrescente uma sprint de diagnóstico ou de desenho, conforme onde está a complexidade.\\n\\n**Decisão no meio do projeto**: logo depois da sprint de viabilidade, inclua uma caixa \\\"Decisão sobre o caminho da solução\\\" dizendo o que acontece se o teste não der certo (caminho alternativo concreto) e que \\\"a decisão define o caminho da solução, não a continuidade do projeto\\\". Não use \\\"go/no-go\\\" no meio do projeto.\\n\\n**Redação dos entregáveis** — prometa o trabalho, não o resultado:\\n- horas → \\\"estimativa de horas\\\" (clientes raramente medem)\\n- teste/viabilidade → \\\"resultado do teste… incluindo em quais casos é possível e em quais não é\\\"\\n- arquitetura → \\\"em nível de desenho, validada com o responsável técnico do cliente\\\"\\n- Business Case → \\\"com base em dados do cliente ou, na falta deles, em referências de mercado\\\"\\n- protótipo → \\\"validado com a equipe\\\" (as sessões entram na seção 8)\\n\\n**Seção 8 — tabela O que · Para quê · Quando**, com tudo que só o cliente pode dar:\\n- acessos de leitura/exports dos sistemas → até o 3º dia útil\\n- dados históricos necessários ao teste de viabilidade → até o 3º dia útil\\n- informações técnicas (ferramentas, APIs, planos, custos por uso) → Sprint 1\\n- disponibilidade da equipe (entrevistas na Sprint 1; 1–2 sessões de teste do protótipo na sprint de desenho) → agendado no kickoff\\n- conversa com o responsável técnico/pelas automações → sprint de arquitetura\\n- custo mensal aproximado da equipe (opcional) → sprint de Business Case\\nFeche com: \\\"Se algum desses itens atrasar, o cronograma é ajustado na mesma medida.\\\" Se houver dados de clientes finais/pessoas: \\\"tratados com confidencialidade e em conformidade com a LGPD; podem ser fornecidos com identificadores pseudonimizados\\\".\\n\\n**Números**: nunca use na proposta um número que veio só das notas comerciais ou de um chute na reunião. Prefira \\\"até\\\", \\\"da ordem de\\\", \\\"estimado pela equipe\\\", e deixe a medição para a Sprint 1.\\n\\n## 4. Preço (quando ainda não foi fechado)\\n\\n**Referência fixa: o time completo — 1 Gerente + 1 Especialista de Produto + 1 Analista de Produto + 1 Analista de Dados ou Dev — por 5 semanas custa R$ 10.900.** Todo o resto deriva dessa referência.\\n\\nValor-dia praticado (dia-Gerente, peso 1,00): **R$ 152,98** (= R$ 10.900 ÷ 2,85 unidades ÷ 25 dias). Pesos: Gerente 1,00 · Especialista 0,75 · Analista de Produto 0,55 · Analista de Dados ou Dev 0,55.\\n\\nPreço = soma dos pesos × dias úteis × R$ 152,98, arredondado para a centena. Rode em Python.\\n\\n| Time | Unidades | 5 semanas (padrão) | 4 semanas (exceção) | 6 semanas |\\n|---|---|---|---|---|\\n| **1 Ger + 1 Esp + 1 Analista de Produto + 1 Analista de Dados ou Dev** | 2,85 | **R$ 10.900** | ~R$ 8.700 | ~R$ 13.100 |\\n| 1 Ger + 1 Esp + 2 Analistas de Produto | 2,85 | R$ 10.900 | ~R$ 8.700 | ~R$ 13.100 |\\n| 1 Ger + 1 Esp + 1 Analista (Produto, Dados ou Dev) | 2,30 | ~R$ 8.800 | ~R$ 7.000 | ~R$ 10.600 |\\n\\nParcelamento padrão: até 2×. Se a referência, o valor-dia ou os pesos mudarem, atualize esta seção e a skill de precificação juntas.\\n\\nAjuste para cima só com justificativa (cliente de alto valor e porte, dor com valor mensal claro), até o nível do cliente de referência (R$ 189,47/dia → R$ 13.500 para o time completo em 5 semanas).\\nConsistência: um cliente menor ou mais sensível a preço não deve pagar mais por semana do que um cliente maior com escopo maior (padrão: R$ 2.180/semana; teto de referência: R$ 2.700/semana).\\n\\n## 5. Visual e geração do arquivo\\n\\nGere .docx com docx-js (leia a skill `docx` antes) e converta para PDF. A4, margens 2 cm, Calibri.\\n\\n```js\\nconst BLUE='1F4E8C', ACC='2E75B6', LIGHT='EAF1FB', GREY='666666', FONT='Calibri', W=9638;\\nconst r=(t,o={})=>new TextRun({text:t,font:FONT,size:21,...o});\\nconst p=(runs,o={})=>new Paragraph({spacing:{after:120,line:288},children:Array.isArray(runs)?runs:[r(runs)],...o});\\n// Seção: número em ACC + título em BLUE, size 28, bold, spacing before 280\\n// Bullet: numbering LevelFormat.BULLET '●', indent left 540 hanging 300\\n// Sprint: título BLUE bold 22; rótulos 'O que fazemos.' / 'Por quê.' / 'O que ataca.' em ACC bold\\n// Tabelas: cabeçalho fill BLUE texto branco, bordas BFBFBF size 4, texto size 19, cantSplit, tableHeader\\n// Caixas (resumo, decisão, investimento): fill LIGHT, borda esquerda ACC size 24\\n// Título: BLUE bold 40; linha cliente ⟷ CITi: ACC bold 23; subtítulo: itálico GREY 20 com borda inferior ACC\\n// Rodapé centralizado GREY 17: 'CITi — Centro Integrado de Tecnologia da Informação · CIn/UFPE · Recife-PE'\\n```\\n\\nDimensões: tabela do cenário atual 1900 / 4000 / 3738; tabela da seção 8 4300 / 3338 / 2000 (somam W).\\n\\n## 6. Verificação antes de entregar\\n\\n1. Converta para PDF e renderize as páginas (`pdftoppm`); olhe cada uma.\\n2. Sem página quase vazia nem seção 9 separada da caixa de investimento (use `keepNext` no título da seção 9, não quebra de página).\\n3. O preço, o prazo, o número de sprints e o parcelamento batem no resumo, na seção 5 e na seção 9 (`pdftotext | grep \\\"R\\\\$\\\"`).\\n4. Nenhum número não validado (passo 1.3) e nenhum decisor citado sem confirmação.\\n5. Meta: 4 a 5 páginas.\\n\\nEntregue .docx e .pdf. Na resposta, em poucas linhas: preço e como chegou nele, e o que a Marina precisa conferir antes de enviar (números a validar, razão social, decisor).\";\nconst bin = await this.helpers.prepareBinaryData(Buffer.from(conteudo, 'utf8'), 'proposta-discovery-enterprise/SKILL.md', 'text/markdown');\nreturn [{ json: { tamanho: conteudo.length }, binary: { skill: bin } }];"
       },
-      "id": "bcc9fa56-9766-45c1-b683-397fa0dc338d",
-      "name": "Extrair texto do PDF",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
-      "position": [
-        -112,
-        1808
-      ],
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Um item por PDF (para extrair o texto) + um item com os dados da página, textos e imagens\nconst out = [];\nconst items = $input.all();\nfor (let i = 0; i < items.length; i++) {\n  const it = items[i];\n  const textos = []; const imagens = {}; const ignorados = [];\n  for (const [k, b] of Object.entries(it.binary || {})) {\n    if (!k.startsWith('Transcrição')) continue; // ignora outros campos de arquivo (ex.: a Proposta gerada)\n    const mt = b.mimeType || ''; const nome = b.fileName || k;\n    if (mt === 'application/pdf') out.push({ json: { page_id: it.json.id, tipo: 'pdf', nome }, binary: { data: b }, pairedItem: { item: i } });\n    else if (mt.startsWith('image/')) imagens[k] = b;\n    else if (mt.startsWith('text/') || /\\.(txt|md|vtt|srt|csv)$/i.test(nome)) {\n      const buf = await this.helpers.getBinaryDataBuffer(i, k);\n      textos.push('--- Arquivo ' + nome + ' ---\\n' + buf.toString('utf8'));\n    } else ignorados.push(nome + ' (' + (mt || 'tipo desconhecido') + ')');\n  }\n  out.push({ json: { page_id: it.json.id, tipo: 'meta', props: it.json.properties || {}, textos, imagens, ignorados }, pairedItem: { item: i } });\n}\nreturn out;\n"
-      },
-      "id": "032fb536-01bb-46c9-8238-c3f0306b5baf",
-      "name": "Separar arquivos (novo)",
+      "id": "396e1128-c488-419b-a26b-c26b8bbd197c",
+      "name": "Arquivo da skill",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -224,
-        -208
+        1008
       ]
     },
     {
       "parameters": {
-        "operation": "pdf",
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/skills",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files[]",
+              "inputDataFieldName": "skill"
+            },
+            {
+              "name": "display_name",
+              "value": "Proposta Discovery Enterprise (CITi)"
+            }
+          ]
+        },
         "options": {}
       },
-      "id": "f1b84ab4-ea86-44b6-a7d1-63451ba7775b",
-      "name": "Extrair PDF (novo)",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
+      "id": "95015d46-eb62-40a1-add6-aed3ba649262",
+      "name": "Criar skill na Anthropic",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
-        -112,
-        -96
+        0,
+        1008
       ],
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Um item por PDF (para extrair o texto) + um item com os dados da página, textos e imagens\nconst out = [];\nconst items = $input.all();\nfor (let i = 0; i < items.length; i++) {\n  const it = items[i];\n  const textos = []; const imagens = {}; const ignorados = [];\n  for (const [k, b] of Object.entries(it.binary || {})) {\n    if (!k.startsWith('Transcrição')) continue; // ignora outros campos de arquivo (ex.: a Proposta gerada)\n    const mt = b.mimeType || ''; const nome = b.fileName || k;\n    if (mt === 'application/pdf') out.push({ json: { page_id: it.json.id, tipo: 'pdf', nome }, binary: { data: b }, pairedItem: { item: i } });\n    else if (mt.startsWith('image/')) imagens[k] = b;\n    else if (mt.startsWith('text/') || /\\.(txt|md|vtt|srt|csv)$/i.test(nome)) {\n      const buf = await this.helpers.getBinaryDataBuffer(i, k);\n      textos.push('--- Arquivo ' + nome + ' ---\\n' + buf.toString('utf8'));\n    } else ignorados.push(nome + ' (' + (mt || 'tipo desconhecido') + ')');\n  }\n  out.push({ json: { page_id: it.json.id, tipo: 'meta', props: it.json.properties || {}, textos, imagens, ignorados }, pairedItem: { item: i } });\n}\nreturn out;\n"
-      },
-      "id": "365eaa13-6878-4646-8f39-37baf715fb5e",
-      "name": "Separar arquivos (preço)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -224,
-        528
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "pdf",
-        "options": {}
-      },
-      "id": "6b26f0e5-b7fe-451d-b5d0-30cfb3d6e0d8",
-      "name": "Extrair PDF (preço)",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
-      "position": [
-        -112,
-        624
-      ],
-      "onError": "continueRegularOutput"
+      "credentials": {
+        "anthropicApi": {
+          "id": "CREDENCIAL_REMOVIDA",
+          "name": "Sua credencial (anthropicApi)"
+        }
+      }
     }
   ],
   "connections": {
-    "Triagem": {
-      "main": [
-        [
-          {
-            "node": "Tem respostas?",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Montar erro",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "A cada 2 minutos": {
       "main": [
         [
@@ -1221,22 +1206,55 @@
         ]
       ]
     },
-    "Marcar analisando (novo)": {
+    "Buscar novos": {
       "main": [
         [
           {
-            "node": "Preparar triagem",
+            "node": "Separar arquivos (novo)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Marcar analisando (preço)": {
+    "Separar arquivos (novo)": {
       "main": [
         [
           {
-            "node": "Preparar precificação",
+            "node": "Extrair PDF (novo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair PDF (novo)": {
+      "main": [
+        [
+          {
+            "node": "Ler arquivos (novo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler arquivos (novo)": {
+      "main": [
+        [
+          {
+            "node": "Marcar analisando (novo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar analisando (novo)": {
+      "main": [
+        [
+          {
+            "node": "Preparar triagem",
             "type": "main",
             "index": 0
           }
@@ -1254,11 +1272,54 @@
         ]
       ]
     },
-    "Preparar precificação": {
+    "Triagem": {
       "main": [
         [
           {
-            "node": "Triagem",
+            "node": "Tem respostas?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem respostas?": {
+      "main": [
+        [
+          {
+            "node": "Revisar coerência",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calcular preço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revisar coerência": {
+      "main": [
+        [
+          {
+            "node": "Calcular preço",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar erro",
             "type": "main",
             "index": 0
           }
@@ -1337,33 +1398,22 @@
         ]
       ]
     },
-    "Ler arquivos (novo)": {
-      "main": [
-        [
-          {
-            "node": "Marcar analisando (novo)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ler arquivos (preço)": {
-      "main": [
-        [
-          {
-            "node": "Marcar analisando (preço)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Atualizar propriedades": {
       "main": [
         [
           {
             "node": "Ler página",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar erro": {
+      "main": [
+        [
+          {
+            "node": "Atualizar propriedades",
             "type": "main",
             "index": 0
           }
@@ -1408,47 +1458,66 @@
         ]
       ]
     },
-    "Montar erro": {
+    "Buscar para precificar": {
       "main": [
         [
           {
-            "node": "Atualizar propriedades",
+            "node": "Separar arquivos (preço)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Tem respostas?": {
+    "Separar arquivos (preço)": {
       "main": [
         [
           {
-            "node": "Revisar coerência",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Calcular preço",
+            "node": "Extrair PDF (preço)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Revisar coerência": {
+    "Extrair PDF (preço)": {
       "main": [
         [
           {
-            "node": "Calcular preço",
+            "node": "Ler arquivos (preço)",
             "type": "main",
             "index": 0
           }
-        ],
+        ]
+      ]
+    },
+    "Ler arquivos (preço)": {
+      "main": [
         [
           {
-            "node": "Montar erro",
+            "node": "Marcar analisando (preço)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar analisando (preço)": {
+      "main": [
+        [
+          {
+            "node": "Preparar precificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar precificação": {
+      "main": [
+        [
+          {
+            "node": "Triagem",
             "type": "main",
             "index": 0
           }
@@ -1477,22 +1546,33 @@
         ]
       ]
     },
-    "Subir skill (manual)": {
+    "Buscar para proposta": {
       "main": [
         [
           {
-            "node": "Arquivo da skill",
+            "node": "Separar arquivos (proposta)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Arquivo da skill": {
+    "Separar arquivos (proposta)": {
       "main": [
         [
           {
-            "node": "Criar skill na Anthropic",
+            "node": "Extrair texto do PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair texto do PDF": {
+      "main": [
+        [
+          {
+            "node": "Ler arquivos (proposta)",
             "type": "main",
             "index": 0
           }
@@ -1712,99 +1792,22 @@
         ]
       ]
     },
-    "Buscar para proposta": {
+    "Subir skill (manual)": {
       "main": [
         [
           {
-            "node": "Separar arquivos (proposta)",
+            "node": "Arquivo da skill",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Separar arquivos (proposta)": {
+    "Arquivo da skill": {
       "main": [
         [
           {
-            "node": "Extrair texto do PDF",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extrair texto do PDF": {
-      "main": [
-        [
-          {
-            "node": "Ler arquivos (proposta)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar novos": {
-      "main": [
-        [
-          {
-            "node": "Separar arquivos (novo)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Separar arquivos (novo)": {
-      "main": [
-        [
-          {
-            "node": "Extrair PDF (novo)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extrair PDF (novo)": {
-      "main": [
-        [
-          {
-            "node": "Ler arquivos (novo)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar para precificar": {
-      "main": [
-        [
-          {
-            "node": "Separar arquivos (preço)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Separar arquivos (preço)": {
-      "main": [
-        [
-          {
-            "node": "Extrair PDF (preço)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extrair PDF (preço)": {
-      "main": [
-        [
-          {
-            "node": "Ler arquivos (preço)",
+            "node": "Criar skill na Anthropic",
             "type": "main",
             "index": 0
           }
